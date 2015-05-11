@@ -56,30 +56,4 @@ public class KanjiUnlock extends ActionBarActivity {
 //            localIntent.addFlags(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
         startActivity(localIntent);
     }
-
-//    public static class WishIDidntNeedThisService extends Service {
-//        public WishIDidntNeedThisService() {
-//        }
-//
-//        @Override
-//        public IBinder onBind(Intent intent) {
-//            // TODO: Return the communication channel to the service.
-//            throw new UnsupportedOperationException("Not yet implemented");
-//        }
-//
-//        @Override
-//        public void onCreate() {
-//            super.onCreate();
-//            //Code below from thinkandroid.wordpress.com
-//            //https://thinkandroid.wordpress.com/2010/01/24/handling-screen-off-and-screen-on-intents/
-//            IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
-//            BroadcastReceiver mReceiver = new LockScreenLauncher();
-//            registerReceiver(mReceiver, filter);
-//        }
-//
-//        @Override
-//        public int onStartCommand(Intent intent, int flags, int startId) {
-//            return super.onStartCommand(intent, flags, startId);
-//        }
-//    }
 }

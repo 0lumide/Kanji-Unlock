@@ -13,7 +13,6 @@ public class LockScreenLauncher extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context, "Intent Detected.", Toast.LENGTH_LONG).show();
         if(intent.getAction().equals("android.intent.action.SCREEN_OFF")) {
             Log.v("Broad", "Broadcast Received");
             Intent localIntent = new Intent(context, Unlock.class);

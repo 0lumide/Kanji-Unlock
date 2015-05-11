@@ -40,5 +40,10 @@ public class Unlock extends Activity {
 
     public void unlockPhone(View v){
         //Unlock Phone here
+        unlock();
+    }
+
+    private void unlock(){
+        finish();
     }
 }
