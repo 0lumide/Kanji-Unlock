@@ -10,7 +10,12 @@ android {
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
+
+        ndk {
+            moduleName "Zinniandroid"
+        }
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -22,4 +27,6 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.3'
+    compile project(':Zinniandroid')
+    compile 'com.github.polok.pincodepicker:pincodepicker:0.0.3'
 }

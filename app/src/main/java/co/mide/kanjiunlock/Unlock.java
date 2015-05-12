@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import org.xdump.android.zinnia.*;
 
 
 public class Unlock extends Activity {
@@ -14,6 +15,8 @@ public class Unlock extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_unlock);
+        Zinnia zin = new Zinnia();
+
     }
 
     @Override
