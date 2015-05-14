@@ -7,8 +7,7 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 
 public class WishIDidntNeedThisService extends Service {
-    public WishIDidntNeedThisService() {
-    }
+    BroadcastReceiver mReceiver;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -17,12 +16,17 @@ public class WishIDidntNeedThisService extends Service {
     }
 
     @Override
+    public void onDestroy(){
+        unregisterReceiver(mReceiver);
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
         //Code below from thinkandroid.wordpress.com
         //https://thinkandroid.wordpress.com/2010/01/24/handling-screen-off-and-screen-on-intents/
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
-        BroadcastReceiver mReceiver = new LockScreenLauncher();
+        mReceiver = new LockScreenLauncher();
         registerReceiver(mReceiver, filter);
     }
 

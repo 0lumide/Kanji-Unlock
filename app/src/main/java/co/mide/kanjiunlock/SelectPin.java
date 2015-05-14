@@ -1,22 +1,35 @@
 package co.mide.kanjiunlock;
 
-import android.app.Activity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
-
-import org.xdump.android.zinnia.Zinnia;
+import android.widget.EditText;
 
 
-public class Unlock extends Activity {
+public class SelectPin extends AppCompatActivity {
+    private EditText pinTextEdit;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_unlock);
-        Zinnia zin = new Zinnia();
+        setContentView(R.layout.activity_select_pin);
+        pinTextEdit = (EditText) findViewById(R.id.pinEditText);
+        pinTextEdit.addTextChangedListener(new TextWatcher() {
+               @Override
+               public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+               @Override
+               public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+               }
+
+               @Override
+               public void afterTextChanged(Editable editable) {}
+           }
+        );
     }
 
     @Override
@@ -38,17 +51,5 @@ public class Unlock extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void unlockPhone(View v){
-        //Unlock Phone here
-        unlock();
-    }
-
-    public void launchKeyboard(View v){
-        Toast.makeText(this, "Pincode touched", Toast.LENGTH_SHORT).show();
-    }
-    private void unlock(){
-        finish();
     }
 }

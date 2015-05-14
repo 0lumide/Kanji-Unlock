@@ -1,7 +1,11 @@
 <resources>
     <string name="app_name">Kanji Unlock</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_unlock">Write to Unlock</string>
+    <string name="title_activity_select_pin">Select Pin</string>
+    <string name="ok_button">OK</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="pin_begin_instruction">Select a four digit pin number</string>
+    <string name="pin_continue_instruction">Press the %1$s button to continue</string>
 </resources>
