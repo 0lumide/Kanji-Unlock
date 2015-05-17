@@ -6,6 +6,20 @@
     <string name="title_activity_select_pin">Select Pin</string>
     <string name="ok_button">OK</string>
     <string name="cancel_button">Cancel</string>
-    <string name="pin_begin_instruction">Select a four digit pin number</string>
+    <string name="pin_reset_instruction">Enter old pin to disable pin</string>
+    <string name="pin_begin_instruction">Select a new four digit pin number</string>
     <string name="pin_continue_instruction">Press the %1$s button to continue</string>
+    <string name="pin_confirm_instruction">Enter pin again to confirm</string>
+    <string name="pin_try_again_instruction">Wrong pin, try again</string>
+    <string name="pin_correct_instruction">Pin successfully set</string>
+    <string name="preview_text">Lockscreen preview</string>
+    <string name="select_character_text">Select Characters</string>
+    <string name="plus_sign">+</string>
+    <string name="back_up_text">Set Pin</string>
+    <string name="back_up_text_desc_text">Setup backup unlock method</string>
+    <string name="preview_button_text">Preview</string>
+    <string name="enable_switch_desc_text">Enable Kanji Unlock Lockscreen</string>
+    <string name="enable_switch_text_text">Enable Lockscreen</string>
+    <string name="disable_text">System Lockscreen</string>
+    <string name="disable_text_desc_text">Disable default screen lock</string>
 </resources>

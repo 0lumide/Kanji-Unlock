@@ -1,14 +1,10 @@
 package co.mide.kanjiunlock;
 
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 public class LockScreenLauncher extends BroadcastReceiver {
 
@@ -33,10 +29,12 @@ public class LockScreenLauncher extends BroadcastReceiver {
     }
     
     private void launchLockScreen(Context context){
-        Log.v("LockScreen", "Attempting to launch LockScreen");
-        Intent localIntent = new Intent(context, Unlock.class);
-        localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            localIntent.addFlags(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
-        context.startActivity(localIntent);
+        if(!Unlock.locked) {
+            Log.v("LockScreen", "Attempting to launch LockScreen");
+            Intent localIntent = new Intent(context, Unlock.class);
+            localIntent.putExtra(AppConstants.IS_ACTUALLY_LOCKED, true);
+            localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(localIntent);
+        }
     }
 }

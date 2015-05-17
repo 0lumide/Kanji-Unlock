@@ -3,6 +3,7 @@
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#111"
     tools:context="co.mide.kanjiunlock.SelectPin">
 
     <TextView
@@ -32,6 +33,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_weight="1"
             android:text="@string/cancel_button"
+            android:onClick="cancelButtonPressed"
             android:id="@+id/cancelButton"
             android:layout_width="10dp"
             android:textSize="20sp"
@@ -39,6 +41,8 @@
         <Button
             style="?android:attr/buttonBarButtonStyle"
             android:text="@string/ok_button"
+            android:onClick="okButtonPressed"
+            android:enabled="false"
             android:layout_weight="1"
             android:id="@+id/okButton"
             android:layout_width="10dp"
