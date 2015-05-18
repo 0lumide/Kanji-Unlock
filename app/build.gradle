@@ -27,5 +27,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile fileTree(dir: new File(buildDir, 'libs'), include: '*.jar')
     compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.caverock:androidsvg:1.2.2-beta-1'
     compile project(':Zinniandroid')
 }

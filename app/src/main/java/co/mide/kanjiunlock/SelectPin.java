@@ -63,7 +63,7 @@ public class SelectPin extends AppCompatActivity {
                        okButton.setEnabled(true);
                    }
                    else{
-                       if(prevInstruction != "")
+                       if(!prevInstruction.equals(""))
                            instruction.setText(prevInstruction);
                        okButton.setEnabled(false);//disable ok button
                    }
@@ -126,26 +126,6 @@ public class SelectPin extends AppCompatActivity {
                 state = 1;
             }
         }
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        return false;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public void okButtonPressed(View v){

@@ -11,4 +11,7 @@ public class AppConstants {
     public static final String IS_ACTUALLY_LOCKED = "real_deal";
     public static final String PACKAGE_NAME = "co.mide.kanjiunlock";
     public static final String CLEAR_PIN = "clear_pin";
+    public static final String CHAR_CHOSEN = "char_chosen";
+    public static final String CHAR_COUNT = "char_count";
+    public static final String CHAR_PREFIX = "chosen_char_";
 }

@@ -22,4 +22,7 @@
     <string name="enable_switch_text_text">Enable Lockscreen</string>
     <string name="disable_text">System Lockscreen</string>
     <string name="disable_text_desc_text">Disable default screen lock</string>
+    <string name="delete_CAB_button_text">Delete</string>
+    <string name="edit_CAB_button_text">Edit</string>
+    <string name="selected_text">Selected</string>
 </resources>
