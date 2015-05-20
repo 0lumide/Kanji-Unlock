@@ -3,43 +3,32 @@ package co.mide.kanjiunlock;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.support.v4.app.FragmentActivity;
+
+import com.caverock.androidsvg.SVGImageView;
 
 public class ImageAdapter extends BaseAdapter {
     private Context mContext;
+    private KanjiUnlock kanjiUnlock;
     private SharedPreferences sharedPreferences;
     // references to our images
     private boolean[] marked;
-    private Integer[] characters = {
-            R.drawable.sample_0, R.drawable.sample_1,
-            R.drawable.sample_2, R.drawable.sample_3,
-            R.drawable.sample_4, R.drawable.sample_5,
-    };
+    private int[] characters;
 
-    //probably would never use
-//    public void setCharacters(char[] chars){
-//        sharedPreferences.edit().putInt(AppConstants.CHAR_COUNT, chars.length).apply();
-//        if(chars.length > 0) {
-//            sharedPreferences.edit().putBoolean(AppConstants.CHAR_CHOSEN, true).apply();
-//            characters = new Integer[chars.length + 1];
-//            for (int i = 0; i < chars.length; i++) {
-//                characters[i + 1] = (int)chars[i];
-//                sharedPreferences.edit().putInt(AppConstants.CHAR_PREFIX + i, chars[i]);
-//            }
-//        }else{
-//            sharedPreferences.edit().putBoolean(AppConstants.CHAR_CHOSEN, false).apply();
-//        }
-//    }
-
+    public boolean getMarked(int i){
+        return marked[i];
+    }
     public void deleteCharacter(int pos){
         int j = 1;
-        Integer[] newChars = new Integer[characters.length - 1];
+        int[] newChars = new int[characters.length - 1];
         boolean[] newmarked = new boolean[characters.length - 1];
         for(int i = 1; i < characters.length; i++){
             if(i != pos){
@@ -49,12 +38,15 @@ public class ImageAdapter extends BaseAdapter {
         }
         marked = newmarked;
         characters = newChars;
-        sharedPreferences.edit().putInt(AppConstants.CHAR_COUNT, characters.length).apply();
+        if(characters.length == 1)
+            sharedPreferences.edit().putBoolean(AppConstants.CHAR_CHOSEN, false).apply();
+        sharedPreferences.edit().putInt(AppConstants.CHAR_COUNT, characters.length - 1).apply();
     }
 
     public void editCharacter(int pos, char character){
         sharedPreferences.edit().putInt(AppConstants.CHAR_PREFIX + pos, character).apply();
         characters[pos] = (int)character;
+        notifyDataSetChanged();
     }
 
     public void unMark(int pos){
@@ -65,8 +57,12 @@ public class ImageAdapter extends BaseAdapter {
         marked[pos] = true;
     }
 
+    public char getCharacter(int pos){
+        return (char)characters[pos];
+    }
+
     public void addCharacter(char character){
-        Integer[] newChars = new Integer[characters.length + 1];
+        int[] newChars = new int[characters.length + 1];
         boolean[] newMarked = new boolean[characters.length + 1];
         for(int i = 1; i < characters.length; i++){
             newChars[i] = characters[i];
@@ -75,24 +71,24 @@ public class ImageAdapter extends BaseAdapter {
         newMarked[characters.length] = false;
         marked = newMarked;
         characters = newChars;
-        sharedPreferences.edit().putInt(AppConstants.CHAR_COUNT, characters.length).apply();
-        editCharacter(characters.length, character);
+        sharedPreferences.edit().putInt(AppConstants.CHAR_COUNT, characters.length - 1).apply();
+        sharedPreferences.edit().putBoolean(AppConstants.CHAR_CHOSEN, true).apply();
+        editCharacter(characters.length - 1, character);
     }
-    public ImageAdapter(Context c) {
+
+    public ImageAdapter(Context c, KanjiUnlock kanjiUnlock) {
+        this.kanjiUnlock = kanjiUnlock;
         //Initialize characters
-        int count = 5;
-//        sharedPreferences = c.getSharedPreferences(AppConstants.PREF_NAME, c.MODE_PRIVATE);
-//        int count = sharedPreferences.getInt(AppConstants.CHAR_COUNT, 0);
+        sharedPreferences = c.getSharedPreferences(AppConstants.PREF_NAME, c.MODE_PRIVATE);
+        int count = sharedPreferences.getInt(AppConstants.CHAR_COUNT, 0);
         marked = new boolean[count + 1];
-//        if(sharedPreferences.getBoolean(AppConstants.CHAR_CHOSEN, false) && (count > 0)){
-//            characters = new Integer[count + 1];
-            for(int i = 1; i <= count; i++){
+        characters = new int[count + 1];
+        if(sharedPreferences.getBoolean(AppConstants.CHAR_CHOSEN, false) && (count > 0)) {
+            for (int i = 1; i <= count; i++) {
                 marked[i] = false;
-//                characters[i] = sharedPreferences.getInt(AppConstants.CHAR_PREFIX + i, 0);
+                characters[i] = sharedPreferences.getInt(AppConstants.CHAR_PREFIX + i, 63912);
             }
-//        }else
-//            //Remember the button
-//            characters = new Integer[1];
+        }
         mContext = c;
     }
 
@@ -130,19 +126,32 @@ public class ImageAdapter extends BaseAdapter {
             } else {
                 button = (Button)convertView;
             }
+            if(!(characters.length < 4))
+                button.setEnabled(false);
+            else {
+                button.setEnabled(true);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        kanjiUnlock.plusButtonClicked();
+                    }
+                });
+            }
             view = button;
         }
         else {
-            ImageView imageView;
+            SVGImageView svgImageView;
             if ((convertView instanceof Button) || (convertView == null)){
-                // if it's not recycled, initialize some attributes
-                imageView = new ImageView(mContext);
-                imageView.setAdjustViewBounds(true);
+                svgImageView = new SVGImageView(mContext);
+                svgImageView.setAdjustViewBounds(true);
+                svgImageView.setBackgroundColor(mContext.getResources().getColor(R.color.svg_background));
             } else {
-                imageView = (ImageView) convertView;
+                svgImageView = (SVGImageView) convertView;
             }
-            imageView.setImageResource(characters[position]);
-            view = imageView;
+            int character = characters[position];
+            String name = JapCharacter.getResourceName(character);
+            svgImageView.setImageAsset(name);
+            view = svgImageView;
         }
         if(marked[position])
             view.setAlpha(0.4f);

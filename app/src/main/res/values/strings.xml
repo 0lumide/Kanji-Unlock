@@ -25,4 +25,6 @@
     <string name="delete_CAB_button_text">Delete</string>
     <string name="edit_CAB_button_text">Edit</string>
     <string name="selected_text">Selected</string>
+    <string name="character_input_error">Invalid character, try another</string>
+    <string name="character_input_title">Enter a character</string>
 </resources>

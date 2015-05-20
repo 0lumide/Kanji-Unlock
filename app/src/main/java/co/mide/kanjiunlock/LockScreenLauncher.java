@@ -3,11 +3,13 @@ package co.mide.kanjiunlock;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.WindowManager;
 
 public class LockScreenLauncher extends BroadcastReceiver {
-
+    //Stuff for lock after time
+    private long lockTime;
     @Override
     public void onReceive(Context context, Intent intent) {
         boolean isEnabled = context.getSharedPreferences(AppConstants.PREF_NAME, context.MODE_PRIVATE).getBoolean(AppConstants.IS_ENABLED, false);
@@ -29,7 +31,7 @@ public class LockScreenLauncher extends BroadcastReceiver {
     }
     
     private void launchLockScreen(Context context){
-        if(!Unlock.locked) {
+        if(!Unlock.locked && (((TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE)).getCallState() == TelephonyManager.CALL_STATE_IDLE )) {
             Log.v("LockScreen", "Attempting to launch LockScreen");
             Intent localIntent = new Intent(context, Unlock.class);
             localIntent.putExtra(AppConstants.IS_ACTUALLY_LOCKED, true);

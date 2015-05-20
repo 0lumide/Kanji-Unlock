@@ -1,12 +1,16 @@
 package co.mide.kanjiunlock;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ActionMode;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,6 +23,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.Method;
@@ -41,7 +46,7 @@ public class KanjiUnlock extends AppCompatActivity {
         backupSwitch = (Switch) findViewById(R.id.backupSwitch);
         disableSwitch = (Switch) findViewById(R.id.disableSwitch);
         gridview = (GridView) findViewById(R.id.gridView);
-        adapter = new ImageAdapter(this);
+        adapter = new ImageAdapter(this, this);
         sharedPreferences = getSharedPreferences(AppConstants.PREF_NAME, MODE_PRIVATE);
         setupSwitches();
         setupCharacters();
@@ -103,27 +108,26 @@ public class KanjiUnlock extends AppCompatActivity {
                                                   long id, boolean checked) {
                 final int checkedCount = gridview.getCheckedItemCount();
                 // Set the CAB title according to total checked items
-                if(checkedCount == 0)
+                if (checkedCount == 0)
                     return;
                 mode.setTitle(checkedCount + " " + getResources().getString(R.string.selected_text));
-                if(checkedCount > 1){
+                if (checkedCount > 1) {
                     mode.getMenu().removeItem(R.id.edit_char);
                     mode.invalidate();
-                }
-                else{
+                } else {
                     mode.getMenu().clear();
                     mode.getMenuInflater().inflate(R.menu.context_menu, mode.getMenu());
                     mode.invalidate();
                 }
-                if(checked) {
+                if (checked) {
                     adapter.mark(position);
                     Log.v("check", "Position " + position);
-                    if(gridview.getChildAt(position) == null)
+                    if (gridview.getChildAt(position) == null)
                         gridview.getChildAt(position % gridview.getNumColumns()).setAlpha(0.4f);
                     else
                         gridview.getChildAt(position).setAlpha(0.4f);
-                }else {
-                    if(gridview.getChildAt(position) == null)
+                } else {
+                    if (gridview.getChildAt(position) == null)
                         gridview.getChildAt(position % gridview.getNumColumns()).setAlpha(1.0f);
                     else
                         gridview.getChildAt(position).setAlpha(1.0f);
@@ -136,11 +140,26 @@ public class KanjiUnlock extends AppCompatActivity {
                 // Respond to clicks on the actions in the CAB
                 switch (item.getItemId()) {
                     case R.id.delete_char:
-                        //TODO delete
+                        for (int i = 1; i < adapter.getCount(); i++) {
+                            if (adapter.getMarked(i)) {
+                                Log.v("delete", i + "");
+                                adapter.deleteCharacter(i);
+                                i = 0;
+                            }
+                        }
+                        adapter.notifyDataSetChanged();
                         mode.finish(); // Action picked, so close the CAB
                         return true;
                     case R.id.edit_char:
                         //TODO edit
+                        int position = 1;
+                        for (int i = 0; i < adapter.getCount(); i++) {
+                            if (adapter.getMarked(i))
+                                position = i;
+                        }
+                        CharacterInputDialog characterInputDialog = new CharacterInputDialog();
+                        characterInputDialog.setEditMode(position, adapter.getCharacter(position));
+                        characterInputDialog.show(getSupportFragmentManager(), "edit character");
                         mode.finish();
                         return true;
                     default:
@@ -158,8 +177,8 @@ public class KanjiUnlock extends AppCompatActivity {
 
             @Override
             public void onDestroyActionMode(ActionMode mode) {
-                for(int i = 0; i < adapter.getCount(); i++) {
-                    if(gridview.getChildAt(i) != null)
+                for (int i = 0; i < adapter.getCount(); i++) {
+                    if (gridview.getChildAt(i) != null)
                         gridview.getChildAt(i).setAlpha(1.0f);
                     adapter.unMark(i);
                 }
@@ -172,16 +191,10 @@ public class KanjiUnlock extends AppCompatActivity {
                 return false;
             }
         });
-//        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            public void onItemClick(AdapterView<?> parent, View v,
-//                                    int position, long id) {
-//                Toast.makeText(getApplicationContext(), "" + position,
-//                        Toast.LENGTH_SHORT).show();
-//            }
-//        });
     }
 
     private void setupSwitches(){
+        getSupportFragmentManager();
         enableSwitch.setChecked(sharedPreferences.getBoolean(AppConstants.IS_ENABLED, false));
         backupSwitch.setChecked(sharedPreferences.getBoolean(AppConstants.PIN_SET, false));
         disableSwitch.setChecked(!isLockScreenDisabled());
@@ -242,5 +255,18 @@ public class KanjiUnlock extends AppCompatActivity {
         }
 
         return false;
+    }
+
+    public void plusButtonClicked(){
+        CharacterInputDialog characterInputDialog = new CharacterInputDialog();
+        characterInputDialog.show(getSupportFragmentManager(), "add character");
+    }
+
+    public void addCharacter(char character){
+        adapter.addCharacter(character);
+    }
+
+    public void editCharacter(int position, char character){
+        adapter.editCharacter(position, character);
     }
 }

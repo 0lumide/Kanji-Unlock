@@ -1,14 +1,24 @@
 package co.mide.kanjiunlock;
 
+import android.content.Context;
+import android.widget.ImageView;
+
 /**
  * Created by Olumide on 5/17/2015.
  */
 public class JapCharacter {
 
-    public static Integer getResource(char n){
-        return 1;
+    public static String getResourceName(int n){
+        String hex = Integer.toHexString(n);
+        while(hex.length() < 5)
+            hex = "0" + hex;
+        hex = hex + ".svg";
+        return hex;
     }
     public static boolean isValid(char n){
+        if((('a' <= n) && ('z' >= n)) || (('A' <= n) && ('Z' >= n))){
+            return true;
+        }
         if(isKana(n)||(n >= 19968)&&(n<=40879)||((n>13312)&&(n < 19903)))
             return true;
         return false;

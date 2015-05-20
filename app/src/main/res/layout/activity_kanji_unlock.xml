@@ -1,20 +1,21 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="5dp"
+    android:layout_height="match_parent"
     android:background="#111"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".KanjiUnlock">
+    android:fillViewport="true" tools:context=".KanjiUnlock">
     <LinearLayout
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="5dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent">
+        android:layout_height="wrap_content">
         <LinearLayout
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:orientation="vertical"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="wrap_content">
             <TextView
                 android:textSize="19sp"
                 android:layout_width="wrap_content"
@@ -151,11 +152,14 @@
                     android:textOff="Off" />
             </RelativeLayout>
         </LinearLayout>
+        <Space
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="0dp" />
         <Button
             android:layout_width="wrap_content"
             android:text="@string/preview_button_text"
             android:onClick="previewLockScreen"
             android:layout_height="wrap_content" />
-
     </LinearLayout>
 </ScrollView>
