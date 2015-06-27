@@ -26,6 +26,7 @@ public class ImageAdapter extends BaseAdapter {
     public boolean getMarked(int i){
         return marked[i];
     }
+
     public void deleteCharacter(int pos){
         int j = 1;
         int[] newChars = new int[characters.length - 1];
@@ -33,6 +34,7 @@ public class ImageAdapter extends BaseAdapter {
         for(int i = 1; i < characters.length; i++){
             if(i != pos){
                 newChars[j] = characters[i];
+                sharedPreferences.edit().putInt(AppConstants.CHAR_PREFIX + j, newChars[j]).apply();
                 newmarked[j++] = marked[i];
             }
         }
@@ -80,13 +82,13 @@ public class ImageAdapter extends BaseAdapter {
         this.kanjiUnlock = kanjiUnlock;
         //Initialize characters
         sharedPreferences = c.getSharedPreferences(AppConstants.PREF_NAME, c.MODE_PRIVATE);
-        int count = sharedPreferences.getInt(AppConstants.CHAR_COUNT, 0);
+        int count = sharedPreferences.getInt(AppConstants.CHAR_COUNT, 1);
         marked = new boolean[count + 1];
         characters = new int[count + 1];
-        if(sharedPreferences.getBoolean(AppConstants.CHAR_CHOSEN, false) && (count > 0)) {
+        if(sharedPreferences.getBoolean(AppConstants.CHAR_CHOSEN, true) && (count > 0)) {
             for (int i = 1; i <= count; i++) {
                 marked[i] = false;
-                characters[i] = sharedPreferences.getInt(AppConstants.CHAR_PREFIX + i, 63912);
+                characters[i] = sharedPreferences.getInt(AppConstants.CHAR_PREFIX + i, 'A');
             }
         }
         mContext = c;

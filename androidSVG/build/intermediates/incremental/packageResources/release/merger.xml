@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="W:\Android-Studio\KanjiUnlock\androidSVG\src\main\res"><file path="W:\Android-Studio\KanjiUnlock\androidSVG\src\main\res\values\attrs.xml" qualifiers=""><declare-styleable name="SVGImageView">
+        <!-- Location of the SVG document. -->
+        <attr format="reference|string" name="svg"/>
+    </declare-styleable></file></source><source path="W:\Android-Studio\KanjiUnlock\androidSVG\build\generated\res\rs\release"/><source path="W:\Android-Studio\KanjiUnlock\androidSVG\build\generated\res\generated\release"/></dataSet><dataSet config="release"><source path="W:\Android-Studio\KanjiUnlock\androidSVG\src\release\res"/></dataSet><mergedItems><configuration qualifiers=""><declare-styleable name="SVGImageView"><attr format="reference|string" name="svg"/></declare-styleable></configuration></mergedItems></merger>

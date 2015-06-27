@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/KanjiUnlock.iml" filepath="$PROJECT_DIR$/KanjiUnlock.iml" />
       <module fileurl="file://$PROJECT_DIR$/Zinniandroid/Zinniandroid.iml" filepath="$PROJECT_DIR$/Zinniandroid/Zinniandroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/androidSVG/androidSVG.iml" filepath="$PROJECT_DIR$/androidSVG/androidSVG.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

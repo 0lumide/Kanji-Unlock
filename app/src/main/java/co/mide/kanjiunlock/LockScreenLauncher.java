@@ -32,6 +32,7 @@ public class LockScreenLauncher extends BroadcastReceiver {
     
     private void launchLockScreen(Context context){
         if(!Unlock.locked && (((TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE)).getCallState() == TelephonyManager.CALL_STATE_IDLE )) {
+            Unlock.locked = true;
             Log.v("LockScreen", "Attempting to launch LockScreen");
             Intent localIntent = new Intent(context, Unlock.class);
             localIntent.putExtra(AppConstants.IS_ACTUALLY_LOCKED, true);

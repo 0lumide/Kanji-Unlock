@@ -14,4 +14,5 @@ public class AppConstants {
     public static final String CHAR_CHOSEN = "char_chosen";
     public static final String CHAR_COUNT = "char_count";
     public static final String CHAR_PREFIX = "chosen_char_";
+    public static final String FRAGMENT_BUNDLE_INIT_INT = "bundle_init_int";
 }
