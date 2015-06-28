@@ -3,26 +3,28 @@ package co.mide.kanjiunlock;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-//import android.support.v4.view.VerticalViewPager;
-//import android.support.v4.view.VerticalViewPager;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import fr.castorflex.android.verticalviewpager.VerticalViewPager;
 //import org.xdump.android.zinnia.Zinnia;
 
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class Unlock extends FragmentActivity {
     private boolean isPreview = false;
@@ -31,17 +33,49 @@ public class Unlock extends FragmentActivity {
     private WindowManager winManager1 = null;
     private CustomViewGroup wrapperView = null;
     private RelativeLayout wrapperView1 = null;
+    private TextView dateText = null;
+    private TextView timeText = null;
+    private TextView amPmText = null;
+    private DateFormat dateFormat;
+    private DateFormat timeFormat;
+    private DateFormat amPmFormat;
 //    private long recognizer;
 //    private long zinniaCharacter;
 //    private Zinnia zin;
     private MyPagerAdapter pageAdapter;
+    private static Unlock unlock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        dateFormat = new SimpleDateFormat("EEE, MMM d");
+        timeFormat = new SimpleDateFormat("h:mm");
+        amPmFormat = new SimpleDateFormat("a");
+        dateFormat.setTimeZone(TimeZone.getDefault());
+        timeFormat.setTimeZone(TimeZone.getDefault());
+        amPmFormat.setTimeZone(TimeZone.getDefault());
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_unlock);
-//        ((FragmentManagerImpl)getSupportFragmentManager()).set;
         setupActivity();
+        unlock = this;
+    }
+
+    public static Unlock getUnlock(){
+        return unlock;
+    }
+
+    public void updateTime(){
+        Date date = new Date(System.currentTimeMillis());
+        if(timeText != null){
+            //update timeText
+            timeText.setText(timeFormat.format(date));
+        }
+        if(dateText != null){
+            //update dateText regardless
+            dateText.setText(dateFormat.format(date));
+        }
+        if(amPmText != null){
+            //update am/pm if need be
+            amPmText.setText(amPmFormat.format(date));
+        }
     }
 
     private List<Fragment> getFragments(){
@@ -114,6 +148,7 @@ public class Unlock extends FragmentActivity {
         }catch (Exception e){
 
         }
+        unlock = null;
         super.onDestroy();
     }
 
@@ -155,13 +190,14 @@ public class Unlock extends FragmentActivity {
             winManager1 = ((WindowManager)getApplicationContext().getSystemService(WINDOW_SERVICE));
             wrapperView1 = new RelativeLayout(getBaseContext());
             getWindow().setAttributes(localLayoutParams1);
-//            winManager1.addView(unlockLayout, localLayoutParams1);
-//            VerticalViewPager pager = (VerticalViewPager)findViewById(R.id.vertical_pager);
             winManager1.addView(wrapperView1, localLayoutParams1);
             View view = View.inflate(this, R.layout.activity_unlock, wrapperView1);
             locked = true;
 
             RelativeLayout unlockLayout = (RelativeLayout)view.findViewById(R.id.unlock_layout);
+            dateText = (TextView)view.findViewById(R.id.date);
+            timeText = (TextView)view.findViewById(R.id.time);
+            amPmText = (TextView)view.findViewById(R.id.am_pm);
             getSupportFragmentManager().setViewGroup(unlockLayout);
 
             view.findViewById(R.id.previewText).setVisibility(View.INVISIBLE);
@@ -169,7 +205,6 @@ public class Unlock extends FragmentActivity {
             VerticalViewPager pager = (VerticalViewPager)view.findViewById(R.id.vertical_pager);
             pager.setAdapter(pageAdapter);
 
-//
             winManager = ((WindowManager) getApplicationContext()
                     .getSystemService(Context.WINDOW_SERVICE));
             WindowManager.LayoutParams localLayoutParams = new WindowManager.LayoutParams();
@@ -192,19 +227,21 @@ public class Unlock extends FragmentActivity {
 
             winManager.addView(wrapperView, localLayoutParams);
 
-
         }else{
             setContentView(R.layout.activity_unlock);
             pageAdapter = new MyPagerAdapter(getSupportFragmentManager(), getFragments());
             VerticalViewPager pager = (VerticalViewPager)findViewById(R.id.vertical_pager);
-            Log.v("pager", pager.getId()+"");
+            Log.v("pager", pager.getId() + "");
             pager.setAdapter(pageAdapter);
-
             isPreview = true;
             locked = false;
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
             findViewById(R.id.previewText).setVisibility(View.VISIBLE);
+            dateText = (TextView)findViewById(R.id.date);
+            timeText = (TextView)findViewById(R.id.time);
+            amPmText = (TextView)findViewById(R.id.am_pm);
         }
+        updateTime();
     }
 
     public void unlockPhone(View v){

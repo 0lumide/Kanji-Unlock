@@ -25,7 +25,11 @@ public class WishIDidntNeedThisService extends Service {
         super.onCreate();
         //Code below from thinkandroid.wordpress.com
         //https://thinkandroid.wordpress.com/2010/01/24/handling-screen-off-and-screen-on-intents/
-        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_TIME_TICK);
+        filter.addAction(Intent.ACTION_TIME_CHANGED);
+        filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
         mReceiver = new LockScreenLauncher();
         registerReceiver(mReceiver, filter);
     }
