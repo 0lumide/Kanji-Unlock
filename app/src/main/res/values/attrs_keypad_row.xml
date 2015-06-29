@@ -1,0 +1,10 @@
+<resources>
+    <declare-styleable name="KeypadRow">
+        <attr name="key1" format="string" />
+        <attr name="keyA" format="string" />
+        <attr name="key2" format="string" />
+        <attr name="keyB" format="string" />
+        <attr name="key3" format="string" />
+        <attr name="keyC" format="string" />
+    </declare-styleable>
+</resources>

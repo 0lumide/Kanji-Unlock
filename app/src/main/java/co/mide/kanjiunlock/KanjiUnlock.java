@@ -79,9 +79,9 @@ public class KanjiUnlock extends AppCompatActivity {
     }
 
     private void previewUnlockScreen(){
-       Intent localIntent = new Intent(this, Unlock.class);
+        Intent localIntent = new Intent(this, Unlock.class);
         localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        localIntent.addFlags(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+//        localIntent.addFlags(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
         startActivity(localIntent);
     }
 

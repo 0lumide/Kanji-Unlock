@@ -3,7 +3,7 @@ package co.mide.kanjiunlock;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -19,7 +19,6 @@ import fr.castorflex.android.verticalviewpager.VerticalViewPager;
 //import org.xdump.android.zinnia.Zinnia;
 
 import java.text.DateFormat;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +38,8 @@ public class Unlock extends FragmentActivity {
     private DateFormat dateFormat;
     private DateFormat timeFormat;
     private DateFormat amPmFormat;
+    private Vibrator vibrator;
+    private VerticalViewPager pager;
 //    private long recognizer;
 //    private long zinniaCharacter;
 //    private Zinnia zin;
@@ -56,6 +57,7 @@ public class Unlock extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setupActivity();
         unlock = this;
+        vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     public static Unlock getUnlock(){
@@ -133,13 +135,13 @@ public class Unlock extends FragmentActivity {
 
     @Override
     public void onDestroy(){
-        if((winManager != null)&&(wrapperView != null)){
-            winManager.removeView(wrapperView);
-            wrapperView.removeAllViews();
-        }
         if((winManager1 != null)&&(wrapperView1 != null)){
             winManager1.removeView(wrapperView1);
             wrapperView1.removeAllViews();
+        }
+        if((winManager != null)&&(wrapperView != null)){
+            winManager.removeView(wrapperView);
+            wrapperView.removeAllViews();
         }
         locked = false;
         try {
@@ -154,9 +156,9 @@ public class Unlock extends FragmentActivity {
 
     @Override
     public void onStop(){
+        if(!isPreview)
+            overridePendingTransition(0, 0);
         super.onStop();
-        Log.v("On stop", "stopping");
-//        finish();
     }
 
     @Override
@@ -183,6 +185,15 @@ public class Unlock extends FragmentActivity {
         super.onAttachedToWindow();
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        if(!isPreview)
+            overridePendingTransition(0, 0);
+        if(isPreview)
+            locked = false;
+    }
+
     private void setupActivity(){
         if(getIntent().getBooleanExtra(AppConstants.IS_ACTUALLY_LOCKED, false)){
             isPreview = false;
@@ -202,7 +213,7 @@ public class Unlock extends FragmentActivity {
 
             view.findViewById(R.id.previewText).setVisibility(View.INVISIBLE);
             pageAdapter = new MyPagerAdapter(getSupportFragmentManager(), getFragments());
-            VerticalViewPager pager = (VerticalViewPager)view.findViewById(R.id.vertical_pager);
+            pager = (VerticalViewPager)view.findViewById(R.id.vertical_pager);
             pager.setAdapter(pageAdapter);
 
             winManager = ((WindowManager) getApplicationContext()
@@ -230,7 +241,7 @@ public class Unlock extends FragmentActivity {
         }else{
             setContentView(R.layout.activity_unlock);
             pageAdapter = new MyPagerAdapter(getSupportFragmentManager(), getFragments());
-            VerticalViewPager pager = (VerticalViewPager)findViewById(R.id.vertical_pager);
+            pager = (VerticalViewPager)findViewById(R.id.vertical_pager);
             Log.v("pager", pager.getId() + "");
             pager.setAdapter(pageAdapter);
             isPreview = true;
@@ -242,6 +253,7 @@ public class Unlock extends FragmentActivity {
             amPmText = (TextView)findViewById(R.id.am_pm);
         }
         updateTime();
+        pager.setPageTransformer(true, new MyPageTransformer());
     }
 
     public void unlockPhone(View v){
@@ -252,5 +264,47 @@ public class Unlock extends FragmentActivity {
     private void unlock(){
         locked = false;
         finish();
+        if(!isPreview)
+            overridePendingTransition(0, 0);
+    }
+
+    private void vibrate(){
+        vibrator.vibrate(10);
+    }
+    public void but1(View v){
+        vibrate();
+    }
+    public void but2(View v){
+        vibrate();
+    }
+    public void but3(View v){
+        vibrate();
+    }
+    public void but4(View v){
+        vibrate();
+    }
+    public void but5(View v){
+        vibrate();
+    }
+    public void but6(View v){
+        vibrate();
+    }
+    public void but7(View v){
+        vibrate();
+    }
+    public void but8(View v){
+        vibrate();
+    }
+    public void but9(View v){
+        vibrate();
+    }
+    public void but10(View v){
+        vibrate();
+    }
+    public void but11(View v){
+        vibrate();
+    }
+    public void but12(View v){
+        vibrate();
     }
 }
