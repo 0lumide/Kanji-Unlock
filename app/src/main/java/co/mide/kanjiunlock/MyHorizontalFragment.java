@@ -25,10 +25,11 @@ import java.text.ParseException;
 /**
  * Created by Olumide on 6/6/2015.
  */
-public class MyHorizontalFragment extends Fragment{
+public class MyHorizontalFragment extends Fragment implements StrokeCallback{
     private SVGImageView kanjiBackground;
     private TextView instruction;
     private char character;
+    private int strokeNum;
 
     public static MyHorizontalFragment newInstance(int screen){
         Log.v("Horizontal fragment", "new Instance");
@@ -37,6 +38,12 @@ public class MyHorizontalFragment extends Fragment{
         bundle.putInt(AppConstants.FRAGMENT_BUNDLE_INIT_INT, screen);
         myHorizontalFragment.setArguments(bundle);
         return myHorizontalFragment;
+    }
+
+    public void onStrokeCountChange(int strokeCount){
+        if(strokeCount == strokeNum){
+
+        }
     }
 
     private String loadAssetTextAsString(Context context, String name) {
@@ -98,11 +105,13 @@ public class MyHorizontalFragment extends Fragment{
         String modSvg = formatSVGString(rawSvg);
         try {
             SVG svg = SVG.getFromString(modSvg);
+            strokeNum = Integer.parseInt(svg.getDocumentTitle());
+            Log.v("Stroke Num", strokeNum+"");
             kanjiBackground.setSVG(svg);
         }catch(SVGParseException e){
             Log.v("SVG", "couldn't parse");
             e.printStackTrace();
-            kanjiBackground.setImageAsset(JapCharacter.getResourceName(character));
+            throw new RuntimeException(String.format("Unable to parse %s", JapCharacter.getResourceName(character)));
         }
         ((SVGImageView) view.findViewById(R.id.grid_background)).setImageAsset("grid.svg");
         return view;

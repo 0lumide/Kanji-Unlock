@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -16,10 +17,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import fr.castorflex.android.verticalviewpager.VerticalViewPager;
-//import org.xdump.android.zinnia.Zinnia;
+import org.xdump.android.zinnia.Zinnia;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,9 +44,9 @@ public class Unlock extends FragmentActivity {
     private DateFormat timeFormat;
     private DateFormat amPmFormat;
     private VerticalViewPager pager;
-//    private long recognizer;
-//    private long zinniaCharacter;
-//    private Zinnia zin;
+    private long recognizer;
+    private long zinniaCharacter;
+    private Zinnia zin;
     private MyPagerAdapter pageAdapter;
     private static Unlock unlock;
     private SharedPreferences preferences;
@@ -89,50 +92,50 @@ public class Unlock extends FragmentActivity {
         return  fragmentList;
     }
     private void zinniaStuff(){
-        //        zin = new Zinnia();
-//        recognizer = zin.zinnia_recognizer_new();
-//        zinniaCharacter = zin.zinnia_character_new();
-////        getAssets().open("handwriting-ja.model").
-//        File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-//        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "kanjiUnlock" + File.separatorChar + "handwriting-ja.model");
-//        if(!file.exists()) {
-//            Toast.makeText(this, "File doesn't Exist", Toast.LENGTH_SHORT).show();
-//        } else{
-//            Toast.makeText(this, "File Exists", Toast.LENGTH_SHORT).show();
-//            zin.zinnia_recognizer_open(recognizer, file.getAbsolutePath());
-//            zin.zinnia_character_set_height(zinniaCharacter, 300);
-//            zin.zinnia_character_set_width(zinniaCharacter, 300);
-//            zin.zinnia_character_add(zinniaCharacter, 0, 51, 29);
-//            zin.zinnia_character_add(zinniaCharacter, 0, 117, 41);
-//            zin.zinnia_character_add(zinniaCharacter, 1, 99, 65);
-//            zin.zinnia_character_add(zinniaCharacter, 1, 219, 77);
-//            zin.zinnia_character_add(zinniaCharacter, 2, 27, 131);
-//            zin.zinnia_character_add(zinniaCharacter, 2, 261, 131);
-//            zin.zinnia_character_add(zinniaCharacter, 3, 129, 17);
-//            zin.zinnia_character_add(zinniaCharacter, 3, 57, 203);
-//            zin.zinnia_character_add(zinniaCharacter, 4, 111, 71);
-//            zin.zinnia_character_add(zinniaCharacter, 4, 219, 173);
-//            zin.zinnia_character_add(zinniaCharacter, 5, 81, 161);
-//            zin.zinnia_character_add(zinniaCharacter, 5, 93, 281);
-//            zin.zinnia_character_add(zinniaCharacter, 6, 99, 167);
-//            zin.zinnia_character_add(zinniaCharacter, 6, 207, 167);
-//            zin.zinnia_character_add(zinniaCharacter, 6, 189, 245);
-//            zin.zinnia_character_add(zinniaCharacter, 7, 99, 227);
-//            zin.zinnia_character_add(zinniaCharacter, 7, 189, 227);
-//            zin.zinnia_character_add(zinniaCharacter, 8, 111, 257);
-//            zin.zinnia_character_add(zinniaCharacter, 8, 189, 245);
-//        }
-//
-//        long result = zin.zinnia_recognizer_classify(recognizer, zinniaCharacter, 10);
-//        if (result == 0) {
-//            Toast.makeText(this, String.format("%s\n", zin.zinnia_recognizer_strerror(recognizer)), Toast.LENGTH_SHORT).show();
-//            Log.v("Zinnia", String.format("%s\n", zin.zinnia_recognizer_strerror(recognizer)));
-//        }else {
-//            for (int i = 0; i < zin.zinnia_result_size(result); ++i) {
-//                Log.v("Zinnia", String.format("%s\t%f\n", zin.zinnia_result_value(result, i), zin.zinnia_result_score(result, i)));
-//                Toast.makeText(this, String.format("%s\t%f\n", zin.zinnia_result_value(result, i), zin.zinnia_result_score(result, i)), Toast.LENGTH_SHORT).show();
-//            }
-//        }
+                zin = new Zinnia();
+        recognizer = zin.zinnia_recognizer_new();
+        zinniaCharacter = zin.zinnia_character_new();
+//        getAssets().open("handwriting-ja.model").
+        File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "kanjiUnlock" + File.separatorChar + "handwriting-ja.model");
+        if(!file.exists()) {
+            Toast.makeText(this, "File doesn't Exist", Toast.LENGTH_SHORT).show();
+        } else{
+            Toast.makeText(this, "File Exists", Toast.LENGTH_SHORT).show();
+            zin.zinnia_recognizer_open(recognizer, file.getAbsolutePath());
+            zin.zinnia_character_set_height(zinniaCharacter, 300);
+            zin.zinnia_character_set_width(zinniaCharacter, 300);
+            zin.zinnia_character_add(zinniaCharacter, 0, 51, 29);
+            zin.zinnia_character_add(zinniaCharacter, 0, 117, 41);
+            zin.zinnia_character_add(zinniaCharacter, 1, 99, 65);
+            zin.zinnia_character_add(zinniaCharacter, 1, 219, 77);
+            zin.zinnia_character_add(zinniaCharacter, 2, 27, 131);
+            zin.zinnia_character_add(zinniaCharacter, 2, 261, 131);
+            zin.zinnia_character_add(zinniaCharacter, 3, 129, 17);
+            zin.zinnia_character_add(zinniaCharacter, 3, 57, 203);
+            zin.zinnia_character_add(zinniaCharacter, 4, 111, 71);
+            zin.zinnia_character_add(zinniaCharacter, 4, 219, 173);
+            zin.zinnia_character_add(zinniaCharacter, 5, 81, 161);
+            zin.zinnia_character_add(zinniaCharacter, 5, 93, 281);
+            zin.zinnia_character_add(zinniaCharacter, 6, 99, 167);
+            zin.zinnia_character_add(zinniaCharacter, 6, 207, 167);
+            zin.zinnia_character_add(zinniaCharacter, 6, 189, 245);
+            zin.zinnia_character_add(zinniaCharacter, 7, 99, 227);
+            zin.zinnia_character_add(zinniaCharacter, 7, 189, 227);
+            zin.zinnia_character_add(zinniaCharacter, 8, 111, 257);
+            zin.zinnia_character_add(zinniaCharacter, 8, 189, 245);
+        }
+
+        long result = zin.zinnia_recognizer_classify(recognizer, zinniaCharacter, 10);
+        if (result == 0) {
+            Toast.makeText(this, String.format("%s\n", zin.zinnia_recognizer_strerror(recognizer)), Toast.LENGTH_SHORT).show();
+            Log.v("Zinnia", String.format("%s\n", zin.zinnia_recognizer_strerror(recognizer)));
+        }else {
+            for (int i = 0; i < zin.zinnia_result_size(result); ++i) {
+                Log.v("Zinnia", String.format("%s\t%f\n", zin.zinnia_result_value(result, i), zin.zinnia_result_score(result, i)));
+                Toast.makeText(this, String.format("%s\t%f\n", zin.zinnia_result_value(result, i), zin.zinnia_result_score(result, i)), Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
