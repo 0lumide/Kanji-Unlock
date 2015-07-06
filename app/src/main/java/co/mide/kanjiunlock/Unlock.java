@@ -1,6 +1,7 @@
 package co.mide.kanjiunlock;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -9,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -38,26 +40,26 @@ public class Unlock extends FragmentActivity {
     private DateFormat dateFormat;
     private DateFormat timeFormat;
     private DateFormat amPmFormat;
-    private Vibrator vibrator;
     private VerticalViewPager pager;
 //    private long recognizer;
 //    private long zinniaCharacter;
 //    private Zinnia zin;
     private MyPagerAdapter pageAdapter;
     private static Unlock unlock;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         dateFormat = new SimpleDateFormat("EEE, MMM d");
         timeFormat = new SimpleDateFormat("h:mm");
         amPmFormat = new SimpleDateFormat("a");
         dateFormat.setTimeZone(TimeZone.getDefault());
         timeFormat.setTimeZone(TimeZone.getDefault());
         amPmFormat.setTimeZone(TimeZone.getDefault());
-        super.onCreate(savedInstanceState);
+        preferences = getSharedPreferences(AppConstants.PREF_NAME, MODE_PRIVATE);
         setupActivity();
         unlock = this;
-        vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     public static Unlock getUnlock(){
@@ -150,6 +152,7 @@ public class Unlock extends FragmentActivity {
         }catch (Exception e){
 
         }
+        Log.v("Unlock", "Unlocked");
         unlock = null;
         super.onDestroy();
     }
@@ -194,7 +197,15 @@ public class Unlock extends FragmentActivity {
             locked = false;
     }
 
+    public boolean verifyPin(String pinString){
+        int pin = preferences.getInt(AppConstants.PIN, 0);
+        if(Integer.parseInt(pinString) == pin)
+            unlock();
+        return Integer.parseInt(pinString) == pin;
+    }
+
     private void setupActivity(){
+        View view = null;
         if(getIntent().getBooleanExtra(AppConstants.IS_ACTUALLY_LOCKED, false)){
             isPreview = false;
             WindowManager.LayoutParams localLayoutParams1 = new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
@@ -202,7 +213,7 @@ public class Unlock extends FragmentActivity {
             wrapperView1 = new RelativeLayout(getBaseContext());
             getWindow().setAttributes(localLayoutParams1);
             winManager1.addView(wrapperView1, localLayoutParams1);
-            View view = View.inflate(this, R.layout.activity_unlock, wrapperView1);
+            view = View.inflate(this, R.layout.activity_unlock, wrapperView1);
             locked = true;
 
             RelativeLayout unlockLayout = (RelativeLayout)view.findViewById(R.id.unlock_layout);
@@ -237,6 +248,7 @@ public class Unlock extends FragmentActivity {
             wrapperView = new CustomViewGroup(this);
 
             winManager.addView(wrapperView, localLayoutParams);
+            Log.v("Unlock", "Locked");
 
         }else{
             setContentView(R.layout.activity_unlock);
@@ -253,6 +265,7 @@ public class Unlock extends FragmentActivity {
             amPmText = (TextView)findViewById(R.id.am_pm);
         }
         updateTime();
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         pager.setPageTransformer(true, new MyPageTransformer());
     }
 
@@ -261,50 +274,10 @@ public class Unlock extends FragmentActivity {
         unlock();
     }
 
-    private void unlock(){
+    private void unlock() {
         locked = false;
         finish();
-        if(!isPreview)
+        if (!isPreview)
             overridePendingTransition(0, 0);
-    }
-
-    private void vibrate(){
-        vibrator.vibrate(10);
-    }
-    public void but1(View v){
-        vibrate();
-    }
-    public void but2(View v){
-        vibrate();
-    }
-    public void but3(View v){
-        vibrate();
-    }
-    public void but4(View v){
-        vibrate();
-    }
-    public void but5(View v){
-        vibrate();
-    }
-    public void but6(View v){
-        vibrate();
-    }
-    public void but7(View v){
-        vibrate();
-    }
-    public void but8(View v){
-        vibrate();
-    }
-    public void but9(View v){
-        vibrate();
-    }
-    public void but10(View v){
-        vibrate();
-    }
-    public void but11(View v){
-        vibrate();
-    }
-    public void but12(View v){
-        vibrate();
     }
 }

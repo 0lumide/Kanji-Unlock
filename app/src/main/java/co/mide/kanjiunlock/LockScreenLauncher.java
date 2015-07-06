@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.WindowManager;
@@ -39,9 +40,17 @@ public class LockScreenLauncher extends BroadcastReceiver {
             int o = 0;
         }
     }
-    
+
+    public static boolean isModeInCall(Context context){
+        AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+        return(manager.getMode()==AudioManager.MODE_IN_CALL);
+    }
+
+    private static boolean isCallIdle(Context context){
+        return (((TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE)).getCallState() == TelephonyManager.CALL_STATE_IDLE );
+    }
     private void launchLockScreen(Context context){
-        if(!Unlock.locked && (((TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE)).getCallState() == TelephonyManager.CALL_STATE_IDLE )) {
+        if(!Unlock.locked && !isModeInCall(context) && isCallIdle(context)) {
             Unlock.locked = true;
             Log.v("LockScreen", "Attempting to launch LockScreen");
             Intent localIntent = new Intent(context, Unlock.class);

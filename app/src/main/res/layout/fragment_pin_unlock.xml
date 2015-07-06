@@ -5,8 +5,37 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_centerHorizontal="true">
+    <TextView
+        android:layout_above="@+id/pinEditTextLayout"
+        android:id="@+id/pin_message"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:id="@+id/pinEditTextLayout"
+        android:layout_centerInParent="true"
+        android:layout_above="@+id/pin_key_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <EditText
+            android:layout_marginBottom="10dp"
+            android:text=""
+            android:id="@+id/pinEnterText"
+            android:layout_width="160dp"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:textSize="25sp"
+            android:maxLength="4"
+            android:inputType="numberPassword"/>
+        <ImageButton
+            android:layout_height="match_parent"
+            android:id="@+id/but_back"
+            android:src="@drawable/ic_action_backspace"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_width="80dp" />
+    </LinearLayout>
     <TableLayout
-        android:id="@+id/pin_text"
+        android:id="@+id/pin_key_text"
         android:layout_centerHorizontal="true"
         android:layout_alignTop="@+id/pin_buttons"
         android:layout_alignLeft="@+id/pin_buttons"
@@ -78,36 +107,17 @@
             android:layout_weight="1">
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but1"
+                android:id="@+id/but1"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but2"
+                android:id="@+id/but2"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but3"
-                android:background="?android:attr/selectableItemBackground"
-                android:layout_weight="1"/>
-        </TableRow>
-        <TableRow
-            android:layout_weight="1"
-            style="?android:attr/buttonBarStyle">
-            <Button
-                android:layout_height="match_parent"
-                android:onClick="but4"
-                android:background="?android:attr/selectableItemBackground"
-                android:layout_weight="1"/>
-            <Button
-                android:layout_height="match_parent"
-                android:onClick="but5"
-                android:background="?android:attr/selectableItemBackground"
-                android:layout_weight="1"/>
-            <Button
-                android:layout_height="match_parent"
-                android:onClick="but6"
+                android:id="@+id/but3"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
         </TableRow>
@@ -116,17 +126,17 @@
             style="?android:attr/buttonBarStyle">
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but7"
+                android:id="@+id/but4"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but8"
+                android:id="@+id/but5"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but9"
+                android:id="@+id/but6"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
         </TableRow>
@@ -135,18 +145,37 @@
             style="?android:attr/buttonBarStyle">
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but10"
+                android:id="@+id/but7"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_weight="1"/>
+            <Button
+                android:layout_height="match_parent"
+                android:id="@+id/but8"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_weight="1"/>
+            <Button
+                android:layout_height="match_parent"
+                android:id="@+id/but9"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_weight="1"/>
+        </TableRow>
+        <TableRow
+            android:layout_weight="1"
+            style="?android:attr/buttonBarStyle">
+            <Button
+                android:layout_height="match_parent"
+                android:id="@+id/but10"
                 android:background="?android:attr/selectableItemBackground"
                 android:visibility="invisible"
                 android:layout_weight="1"/>
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but11"
+                android:id="@+id/but11"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
             <Button
                 android:layout_height="match_parent"
-                android:onClick="but12"
+                android:id="@+id/but12"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
         </TableRow>
