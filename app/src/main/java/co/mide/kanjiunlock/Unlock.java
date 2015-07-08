@@ -5,13 +5,11 @@ import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -19,8 +17,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import fr.castorflex.android.verticalviewpager.VerticalViewPager;
 import org.xdump.android.zinnia.Zinnia;
+
+import fr.castorflex.android.verticalviewpager.VerticalViewPager;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -54,6 +53,7 @@ public class Unlock extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        zin = new Zinnia(this);
         dateFormat = new SimpleDateFormat("EEE, MMM d");
         timeFormat = new SimpleDateFormat("h:mm");
         amPmFormat = new SimpleDateFormat("a");
@@ -85,15 +85,33 @@ public class Unlock extends FragmentActivity {
         }
     }
 
+    public void addStroke(long character, int strokeNum, int x, int y){
+        zin.zinnia_character_add(character, strokeNum, x, y);
+    }
+
+    private void setCharacterSize(long character, int width, int height){
+        zin.zinnia_character_set_width(character, width);
+        zin.zinnia_character_set_height(character, height);
+    }
+
     private List<Fragment> getFragments(){
         List<Fragment> fragmentList = new ArrayList<Fragment>();
         fragmentList.add(MyVerticalFragment.newInstance(1));
         fragmentList.add(MyVerticalFragment.newInstance(2));
         return  fragmentList;
     }
+
+    public boolean verifyCharacter(char character, long zinniaCharacter){
+//        long result = zin.zinnia_recognizer_classify(recognizer, zinniaCharacter, 10);
+        return false;
+    }
+
+    public long createCharacter(int width, int height){
+        long character = zin.zinnia_character_new();
+        setCharacterSize(character, width, height);
+        return character;
+    }
     private void zinniaStuff(){
-                zin = new Zinnia();
-        recognizer = zin.zinnia_recognizer_new();
         zinniaCharacter = zin.zinnia_character_new();
 //        getAssets().open("handwriting-ja.model").
         File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -102,7 +120,7 @@ public class Unlock extends FragmentActivity {
             Toast.makeText(this, "File doesn't Exist", Toast.LENGTH_SHORT).show();
         } else{
             Toast.makeText(this, "File Exists", Toast.LENGTH_SHORT).show();
-            zin.zinnia_recognizer_open(recognizer, file.getAbsolutePath());
+            recognizer = zin.zinnia_recognizer_new(file.getAbsolutePath());
             zin.zinnia_character_set_height(zinniaCharacter, 300);
             zin.zinnia_character_set_width(zinniaCharacter, 300);
             zin.zinnia_character_add(zinniaCharacter, 0, 51, 29);
@@ -274,10 +292,12 @@ public class Unlock extends FragmentActivity {
 
     public void unlockPhone(View v){
         //Unlock Phone here
-        unlock();
+        if(v.getId() == R.id.unlock_button)
+            unlock();
     }
 
     private void unlock() {
+        Log.d("Unlock", "Unlock function");
         locked = false;
         finish();
         if (!isPreview)

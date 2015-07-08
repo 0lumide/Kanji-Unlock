@@ -1,13 +1,15 @@
 package co.mide.kanjiunlock;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.provider.Settings;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -16,50 +18,93 @@ import java.util.ArrayList;
 /**
  * Created by Olumide on 6/6/2015.
  */
-public class DrawCanvas extends ImageView {
+public class DrawCanvas extends View {
     private Paint paint;
     private ArrayList<Stroke> strokes = new ArrayList<>();
+    private int strokeCount = -1;
+    private Bitmap viewCache;
+    private final float STROKE_WIDTH = 17;
+    private StrokeCallback strokeCallback;
 
     public DrawCanvas(Context context){
         super(context);
         paint = new Paint();
-        setFocusable(true);
+        paint.setColor(Color.parseColor("#EE010101"));
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setAntiAlias(true);
+        paint.setDither(true);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(STROKE_WIDTH);
     }
 
     public DrawCanvas(Context context, AttributeSet attrs, int defStyle){
         super(context, attrs, defStyle);
         paint = new Paint();
-        setFocusable(true);
+        paint.setColor(Color.parseColor("#EE010101"));
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setAntiAlias(true);
+        paint.setDither(true);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(STROKE_WIDTH);
     }
 
     public DrawCanvas(Context context, AttributeSet attrs){
         super(context, attrs);
         paint = new Paint();
-        setFocusable(true);
+        paint.setColor(Color.parseColor("#EE010101"));
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setAntiAlias(true);
+        paint.setDither(true);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(STROKE_WIDTH);
+    }
+
+    public Stroke getStroke(int strokeNum){
+        return strokes.get(strokeNum);
+    }
+
+    public void resetCanvas(){
+        strokes = new ArrayList<>();
+        strokeCount = -1;
+        viewCache = null;
+        invalidate();
+    }
+
+    public void registerStrokeCallback(StrokeCallback s){
+        if(strokeCallback == null)
+            this.strokeCallback = s;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        paint.setAntiAlias(true);
-        paint.setDither(true);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-
+        Log.v("onDraw", "onDraw");
+        if(viewCache != null) {
+            canvas.drawBitmap(viewCache, 0, 0, null);
+            Log.v("Size:", viewCache.getWidth()+" x "+viewCache.getHeight());
+        }else{
+            Log.v("view cache", "Null");
+        }
         //draw stroke
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setColor(Color.parseColor("#EE010101"));
-        for(int i = 0; i < strokes.size(); i++) {
-            paint.setStrokeWidth(15);
-            Stroke stroke = strokes.get(i);
-            if (stroke.getSize() > 1) {
-                for (int f = 1; f < stroke.getSize(); f++) {
+        if(strokeCount >= 0) {
+            paint.setStrokeWidth(STROKE_WIDTH);
+            Stroke stroke = strokes.get(strokeCount);
+            if(stroke.getSize() >= 1) {
+                canvas.drawPoint(stroke.getX(0), stroke.getY(0), paint);
+            }
+            if (stroke.getSize() >= 2) {
+                paint.setStrokeWidth(STROKE_WIDTH);
+                canvas.drawLine(stroke.getX(0), stroke.getY(0), stroke.getX(1), stroke.getY(1), paint);
+            }
+            if (stroke.getSize() > 2) {
+                for (int f = 2; f < stroke.getSize(); f++) {
                     double distance = pythag(stroke.getX(f - 1), stroke.getY(f - 1), stroke.getX(f), stroke.getY(f));
                     paint.setStrokeWidth(getStrokeWidth(distance, stroke.getTime(f) - stroke.getTime(f-1)));
                     canvas.drawLine(stroke.getX(f - 1), stroke.getY(f - 1), stroke.getX(f), stroke.getY(f), paint);
                 }
-            } else if (stroke.getSize() == 1) {
-//                canvas.drawPoint(stroke.getX(0), stroke.getY(0), paint);
             }
         }
     }
@@ -68,11 +113,10 @@ public class DrawCanvas extends ImageView {
         return num*num;
     }
 
-    private int getStrokeWidth(double dist, long time){
+    private float getStrokeWidth(double dist, long time){
         double num = 1d;
         double den = calcDenominator(dist/time);
-        Log.v("dist and time", String.format("dist: %s, time: %s", dist+"", time+""));
-        return (int)(15*num/den);
+        return (float)(STROKE_WIDTH*num/den);
     }
 
     private double calcDenominator(double dist){
@@ -91,39 +135,89 @@ public class DrawCanvas extends ImageView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         boolean returnValue = false;
-        if ((event.getAction() != MotionEvent.ACTION_CANCEL) && (event.getAction() != MotionEvent.ACTION_UP)) {
-            if(event.getAction() == MotionEvent.ACTION_DOWN)
-                strokes.add(new Stroke());
-            Stroke stroke = strokes.get(strokes.size()-1);
+        if ((event.getAction() == MotionEvent.ACTION_MOVE) || (event.getAction() == MotionEvent.ACTION_DOWN)) {
             getParent().requestDisallowInterceptTouchEvent(true);
-            Log.v("Down time", event.getDownTime()+"");
-            stroke.addPoint((int) event.getX(), (int) event.getY(), event.getEventTime());
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                setDrawingCacheEnabled(true);
+                buildDrawingCache(true);
+                viewCache = Bitmap.createBitmap(getDrawingCache());
+                setDrawingCacheEnabled(false);
+                strokeCount++;
+                strokes.add(new Stroke());
+            }
+            Stroke stroke = strokes.get(strokes.size() - 1);
+            if(event.getAction() == MotionEvent.ACTION_MOVE){
+                final int historySize = event.getHistorySize();
+                final int pointerCount = event.getPointerCount();
+                Log.d("stroke", String.format("Hist: %d, Point: %d",historySize, pointerCount));
+//                for (int h = 0; h < historySize; h++) {
+//                    for (int p = 0; p < pointerCount; p++) {
+//                        stroke.addPoint((int) event.getHistoricalX(p,h),
+//                                (int) event.getHistoricalY(p,h),
+//                                event.getHistoricalPressure(p),
+//                                event.getHistoricalEventTime(h));
+//                    }
+//                }
+                for (int p = 0; p < pointerCount; p++) {
+                    stroke.addPoint((int) event.getX(p),
+                            (int) event.getY(p),
+                            event.getPressure(p),
+                            event.getEventTime());
+                }
+            }else{
+                final int pointerCount = event.getPointerCount();
+                Log.d("stroke", String.format("Point: %d", pointerCount));
+                for (int p = 0; p < pointerCount; p++) {
+                    stroke.addPoint((int) event.getX(p),
+                            (int) event.getY(p),
+                            event.getPressure(p),
+                            event.getEventTime());
+                }
+            }
             invalidate();
             returnValue = true;
         }else{
-            getParent().requestDisallowInterceptTouchEvent(false);
+            if(((event.getAction() == MotionEvent.ACTION_UP)||(event.getAction() == MotionEvent.ACTION_CANCEL))&&(strokeCallback != null))
+                strokeCallback.onStrokeCountChange(strokeCount+1);
         }
         return returnValue;
     }
 
-    private class Stroke{
+    public class Stroke{
         private ArrayList<Integer> xCoor = new ArrayList<>();
         private ArrayList<Integer> yCoor = new ArrayList<>();
+        private ArrayList<Float> pressure = new ArrayList<>();
         private ArrayList<Long> time = new ArrayList<>();
 
+        public Stroke(){
+            xCoor.ensureCapacity(250);
+            yCoor.ensureCapacity(250);
+            time.ensureCapacity(250);
+            pressure.ensureCapacity(250);
+        }
         public int getX(int index){
             return xCoor.get(index);
         }
         public int getY(int index){
             return yCoor.get(index);
         }
+        public float getPressure(int index){
+            return pressure.get(index);
+        }
         public long getTime(int index){
             return time.get(index);
         }
-        public void addPoint(int x, int y, long eventTime){
+        public void addPoint(int x, int y, float pressure, long time){
+            Log.v("add", "added: "+x+","+y+","+pressure+","+time);
             xCoor.add(x);
             yCoor.add(y);
-            time.add(eventTime);
+            this.time.add(time);
+            float p = pressure;
+            if(pressure < 0)
+                p = 0;
+            else if(pressure > 1)
+                p = 1;
+            this.pressure.add(p);
         }
         public int getSize(){
             return xCoor.size();

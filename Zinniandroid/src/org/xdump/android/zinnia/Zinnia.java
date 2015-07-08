@@ -1,12 +1,18 @@
 package org.xdump.android.zinnia;
 
+import android.content.Context;
+
 public class Zinnia {
+    private Context context;
+	public Zinnia(Context context){
+        this.context = context;
+    }
 	static {
 		System.loadLibrary("zinniajni");
 	}
 
 	public native long  zinnia_character_new();
-	public native void        zinnia_character_destroy(long character);
+	public static native void        zinnia_character_destroy(long character);
 	public native void        zinnia_character_set_value(long character, String str);
 	public native void        zinnia_character_set_value2(long character, String str, long length);
 	public native String zinnia_character_value(long character);
@@ -31,9 +37,15 @@ public class Zinnia {
 	public native long      zinnia_result_size(long result);
 	public native void        zinnia_result_destroy(long result);
 
-	public native long zinnia_recognizer_new();
+	public long zinnia_recognizer_new(String modelName){
+		long recognizer = zinnia_recognizer_new();
+        zinnia_recognizer_open(recognizer, modelName);
+        return recognizer;
+	}
+
+	private native long zinnia_recognizer_new();
 	public native void                zinnia_recognizer_destroy(long recognizer);
-	public native int                 zinnia_recognizer_open(long recognizer, String filename);
+	private native int                 zinnia_recognizer_open(long recognizer, String filename);
 	public native int                 zinnia_recognizer_open_from_ptr(long recognizer,
 			String ptr, long size);
 	public native int                 zinnia_recognizer_close(long recognizer);

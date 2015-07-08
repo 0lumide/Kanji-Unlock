@@ -43,7 +43,7 @@ public class LockScreenLauncher extends BroadcastReceiver {
 
     public static boolean isModeInCall(Context context){
         AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-        return(manager.getMode()==AudioManager.MODE_IN_CALL);
+        return(manager.getMode()!=AudioManager.MODE_NORMAL);
     }
 
     private static boolean isCallIdle(Context context){
@@ -55,7 +55,6 @@ public class LockScreenLauncher extends BroadcastReceiver {
             Log.v("LockScreen", "Attempting to launch LockScreen");
             Intent localIntent = new Intent(context, Unlock.class);
             localIntent.putExtra(AppConstants.IS_ACTUALLY_LOCKED, true);
-//            localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             localIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
             localIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             context.startActivity(localIntent);

@@ -26,9 +26,12 @@ repositories {
 
 
 dependencies {
-   compile files('./libs/mod-android-support-v4.jar')
+    compile files('./libs/mod-android-support-v4.jar')
     compile ('com.android.support:appcompat-v7:22.2.0'){
         exclude module: 'support-v4'
+    }
+    compile ('com.mcxiaoke.viewpagerindicator:library:2.4.1'){
+        exclude group: 'com.android.support', module: 'support-v4'
     }
     compile ('com.github.castorflex.verticalviewpager:library:19.0.1'){
         exclude group: 'com.android.support', module: 'support-v4'

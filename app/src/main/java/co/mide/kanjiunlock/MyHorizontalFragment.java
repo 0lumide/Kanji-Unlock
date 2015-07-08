@@ -2,10 +2,8 @@ package co.mide.kanjiunlock;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,11 +14,14 @@ import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGImageView;
 import com.caverock.androidsvg.SVGParseException;
 
+
+import org.xdump.android.zinnia.Zinnia;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
+
 
 /**
  * Created by Olumide on 6/6/2015.
@@ -30,6 +31,9 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
     private TextView instruction;
     private char character;
     private int strokeNum;
+    private DrawCanvas canvas;
+    private long zinniaCharacter;
+    private TextView progressReport;
 
     public static MyHorizontalFragment newInstance(int screen){
         Log.v("Horizontal fragment", "new Instance");
@@ -41,9 +45,24 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
     }
 
     public void onStrokeCountChange(int strokeCount){
-        if(strokeCount == strokeNum){
-
+        formatProgressReport(strokeCount);
+        DrawCanvas.Stroke stroke = canvas.getStroke(strokeCount - 1);
+        for(int i = 0; i < stroke.getSize(); i++){
+            ((Unlock)getActivity()).addStroke(zinniaCharacter, strokeCount-1, stroke.getX(i), stroke.getY(i));
         }
+        if(strokeCount >= strokeNum){
+            if(!((Unlock)getActivity()).verifyCharacter(character, zinniaCharacter)) {
+                resetCanvas();
+                progressReport.setText(R.string.write_try_again_instruction);
+            }
+        }
+    }
+
+    private void resetCanvas(){
+        Zinnia.zinnia_character_destroy(zinniaCharacter);
+        zinniaCharacter = ((Unlock)getActivity()).createCharacter(canvas.getWidth(), canvas.getHeight());
+        canvas.resetCanvas();
+        formatProgressReport(0);
     }
 
     private String loadAssetTextAsString(Context context, String name) {
@@ -86,6 +105,10 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
         return tmp;
     }
 
+    private void formatProgressReport(int strokeCount){
+        progressReport.setText(getResources().getString(R.string.stroke_progress, strokeCount+"", strokeNum+""));
+    }
+
     private int countStrokes(String svgFileString){
         String counter = "<text";
         return (svgFileString.length() - svgFileString.replace(counter, "").length())/counter.length();
@@ -98,6 +121,8 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
         View view = inflater.inflate(R.layout.fragment_unlock_canvas, viewGroup, false);
         instruction = (TextView)view.findViewById(R.id.draw_instruc);
         kanjiBackground = (SVGImageView)view.findViewById(R.id.kanji_background);
+        canvas = (DrawCanvas)view.findViewById(R.id.canvas);
+        progressReport = (TextView)view.findViewById(R.id.progress_report);
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
         character = (char)sharedPreferences.getInt(AppConstants.CHAR_PREFIX + screen, 'A');
         instruction.setText(getString(R.string.write_instructions, character));
@@ -113,6 +138,10 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
             e.printStackTrace();
             throw new RuntimeException(String.format("Unable to parse %s", JapCharacter.getResourceName(character)));
         }
+        canvas.registerStrokeCallback(this);
+        formatProgressReport(0);
+        //create and initialize character
+        zinniaCharacter = ((Unlock)getActivity()).createCharacter(canvas.getWidth(), canvas.getHeight());
         ((SVGImageView) view.findViewById(R.id.grid_background)).setImageAsset("grid.svg");
         return view;
     }

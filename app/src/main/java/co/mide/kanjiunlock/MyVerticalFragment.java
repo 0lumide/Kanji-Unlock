@@ -18,6 +18,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.viewpagerindicator.LinePageIndicator;
+import com.viewpagerindicator.TitlePageIndicator;
+import com.viewpagerindicator.UnderlinePageIndicator;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +63,9 @@ public class MyVerticalFragment extends Fragment{
             View view = inflater.inflate(R.layout.fragment_write_to_unlock, viewGroup, false);
             ViewPager pager = (ViewPager) view.findViewById(R.id.horizontal_pager);
             MyPagerAdapter pageAdapter = new MyPagerAdapter(getActivity().getSupportFragmentManager(), getFragments());
+            LinePageIndicator indicator = (LinePageIndicator)view.findViewById(R.id.indicator);
             pager.setAdapter(pageAdapter);
+            indicator.setViewPager(pager);
             return view;
         } else {
             final View view = inflater.inflate(R.layout.fragment_pin_unlock, viewGroup, false);

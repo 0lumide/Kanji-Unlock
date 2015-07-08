@@ -29,4 +29,6 @@
     <string name="character_input_error">Invalid character, try another</string>
     <string name="character_input_title">Enter a character</string>
     <string name="write_instructions">Write \'%1$s\' to unlock</string>
+    <string name="stroke_progress">Stroke \'%1$s\' of \'%2$s\'</string>
+    <string name="write_try_again_instruction">Incorrect, try again</string>
 </resources>
