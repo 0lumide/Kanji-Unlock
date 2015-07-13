@@ -46,9 +46,11 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
 
     public void onStrokeCountChange(int strokeCount){
         formatProgressReport(strokeCount);
-        DrawCanvas.Stroke stroke = canvas.getStroke(strokeCount - 1);
-        for(int i = 0; i < stroke.getSize(); i++){
-            ((Unlock)getActivity()).addStroke(zinniaCharacter, strokeCount-1, stroke.getX(i), stroke.getY(i));
+        if(strokeCount > 0) {
+            DrawCanvas.Stroke stroke = canvas.getStroke(strokeCount - 1);
+            for (int i = 0; i < stroke.getSize(); i++) {
+                ((Unlock) getActivity()).addStroke(zinniaCharacter, strokeCount - 1, stroke.getX(i), stroke.getY(i));
+            }
         }
         if(strokeCount >= strokeNum){
             if(!((Unlock)getActivity()).verifyCharacter(character, zinniaCharacter)) {
@@ -114,6 +116,13 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
         return (svgFileString.length() - svgFileString.replace(counter, "").length())/counter.length();
     }
 
+    public void onBackPressed(){
+        canvas.undoStroke();
+    }
+
+    public void onBackLongPressed(){
+        resetCanvas();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle){
@@ -122,9 +131,16 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
         instruction = (TextView)view.findViewById(R.id.draw_instruc);
         kanjiBackground = (SVGImageView)view.findViewById(R.id.kanji_background);
         canvas = (DrawCanvas)view.findViewById(R.id.canvas);
+        canvas.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Log.v("LongClick","LongClick");
+                return true;
+            }
+        });
         progressReport = (TextView)view.findViewById(R.id.progress_report);
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
-        character = (char)sharedPreferences.getInt(AppConstants.CHAR_PREFIX + screen, 'A');
+        character = (char)sharedPreferences.getInt(AppConstants.CHAR_PREFIX + screen, '小');
         instruction.setText(getString(R.string.write_instructions, character));
         String rawSvg = loadAssetTextAsString(getActivity(), JapCharacter.getResourceName(character));
         String modSvg = formatSVGString(rawSvg);

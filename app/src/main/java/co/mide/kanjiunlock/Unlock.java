@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-public class Unlock extends FragmentActivity {
+public class Unlock extends FragmentActivity implements KeyPressedCallback{
     private boolean isPreview = false;
     public static boolean locked = false;
     private WindowManager winManager = null;
@@ -185,22 +185,25 @@ public class Unlock extends FragmentActivity {
         super.onStop();
     }
 
-    @Override
-    public void onBackPressed(){
+    public void onBackKeyPressed(){
+        Log.d("Back", "back pressed");
         if(isPreview)
             super.onBackPressed();
+        else{
+            Log.d("Back", "item: "+pager.getCurrentItem());
+            if(pager.getCurrentItem() == 0)
+                ((MyVerticalFragment)pageAdapter.getItem(0)).onBackPressed();
+        }
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, @NonNull KeyEvent event) {
-        boolean returnValue;
-        //noinspection SimplifiableIfStatement
-        if ((keyCode == KeyEvent.KEYCODE_BACK) && (!isPreview)) {
-            returnValue = true;
-        }else{
-            returnValue = super.onKeyDown(keyCode, event);
+    public void onBackKeyLongPressed(){
+        Log.d("Back", "back long pressed");
+        if(isPreview)
+            super.onBackPressed();
+        else{
+            if(pager.getCurrentItem() == 0)
+                ((MyVerticalFragment)pageAdapter.getItem(0)).onBackLongPressed();
         }
-        return returnValue;
     }
 
     @Override
@@ -228,6 +231,8 @@ public class Unlock extends FragmentActivity {
     private void setupActivity(){
         View view = null;
         if(getIntent().getBooleanExtra(AppConstants.IS_ACTUALLY_LOCKED, false)){
+            //just to still be able to pick up onback pressed
+            setContentView(R.layout.activity_blank);
             isPreview = false;
             WindowManager.LayoutParams localLayoutParams1 = new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
             winManager1 = ((WindowManager)getApplicationContext().getSystemService(WINDOW_SERVICE));
@@ -253,7 +258,7 @@ public class Unlock extends FragmentActivity {
             WindowManager.LayoutParams localLayoutParams = new WindowManager.LayoutParams();
             localLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
             localLayoutParams.gravity = Gravity.TOP;
-            localLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|
+            localLayoutParams.flags = //WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|
 
                     // this is to enable the notification to recieve touch events
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
@@ -267,8 +272,20 @@ public class Unlock extends FragmentActivity {
             localLayoutParams.format = PixelFormat.TRANSPARENT;
 
             wrapperView = new CustomViewGroup(this);
+            wrapperView.registerCallback(this);
 
             winManager.addView(wrapperView, localLayoutParams);
+            wrapperView.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    Log.d("Back", "item: " + pager.getCurrentItem());
+                    if ((keyCode == KeyEvent.KEYCODE_BACK) && (pager.getCurrentItem() == 0)) {
+                        ((MyVerticalFragment) pageAdapter.getItem(0)).onBackPressed();
+                        return true;
+                    }
+                    return false;
+                }
+            });
             Log.v("Unlock", "Locked");
 
         }else{

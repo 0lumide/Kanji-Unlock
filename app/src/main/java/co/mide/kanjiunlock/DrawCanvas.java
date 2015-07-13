@@ -26,8 +26,7 @@ public class DrawCanvas extends View {
     private final float STROKE_WIDTH = 17;
     private StrokeCallback strokeCallback;
 
-    public DrawCanvas(Context context){
-        super(context);
+    private void init(){
         paint = new Paint();
         paint.setColor(Color.parseColor("#EE010101"));
         paint.setStrokeCap(Paint.Cap.ROUND);
@@ -36,34 +35,35 @@ public class DrawCanvas extends View {
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(STROKE_WIDTH);
+    }
+    public DrawCanvas(Context context){
+        super(context);
+        init();
     }
 
     public DrawCanvas(Context context, AttributeSet attrs, int defStyle){
         super(context, attrs, defStyle);
-        paint = new Paint();
-        paint.setColor(Color.parseColor("#EE010101"));
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setAntiAlias(true);
-        paint.setDither(true);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(STROKE_WIDTH);
+        init();
     }
 
     public DrawCanvas(Context context, AttributeSet attrs){
         super(context, attrs);
-        paint = new Paint();
-        paint.setColor(Color.parseColor("#EE010101"));
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setAntiAlias(true);
-        paint.setDither(true);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(STROKE_WIDTH);
+        init();
     }
 
     public Stroke getStroke(int strokeNum){
         return strokes.get(strokeNum);
+    }
+
+    public void undoStroke(){
+        if(strokeCount >= 0) {
+            strokeCount--;
+            strokes.remove(strokes.size() - 1);
+            viewCache = null;
+            invalidate();
+            if(strokeCallback != null)
+                strokeCallback.onStrokeCountChange(strokeCount+1);
+        }
     }
 
     public void resetCanvas(){
@@ -81,29 +81,29 @@ public class DrawCanvas extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.v("onDraw", "onDraw");
-        if(viewCache != null) {
+        if(viewCache != null)
             canvas.drawBitmap(viewCache, 0, 0, null);
-            Log.v("Size:", viewCache.getWidth()+" x "+viewCache.getHeight());
-        }else{
-            Log.v("view cache", "Null");
-        }
         //draw stroke
         if(strokeCount >= 0) {
-            paint.setStrokeWidth(STROKE_WIDTH);
-            Stroke stroke = strokes.get(strokeCount);
-            if(stroke.getSize() >= 1) {
-                canvas.drawPoint(stroke.getX(0), stroke.getY(0), paint);
-            }
-            if (stroke.getSize() >= 2) {
+            for(int i = 0; i<strokes.size(); i++) {
                 paint.setStrokeWidth(STROKE_WIDTH);
-                canvas.drawLine(stroke.getX(0), stroke.getY(0), stroke.getX(1), stroke.getY(1), paint);
-            }
-            if (stroke.getSize() > 2) {
-                for (int f = 2; f < stroke.getSize(); f++) {
-                    double distance = pythag(stroke.getX(f - 1), stroke.getY(f - 1), stroke.getX(f), stroke.getY(f));
-                    paint.setStrokeWidth(getStrokeWidth(distance, stroke.getTime(f) - stroke.getTime(f-1)));
-                    canvas.drawLine(stroke.getX(f - 1), stroke.getY(f - 1), stroke.getX(f), stroke.getY(f), paint);
+                Stroke stroke;
+                if(viewCache != null)
+                    i = strokeCount;
+                stroke = strokes.get(i);
+                if (stroke.getSize() >= 1) {
+                    canvas.drawPoint(stroke.getX(0), stroke.getY(0), paint);
+                }
+                if (stroke.getSize() >= 2) {
+                    paint.setStrokeWidth(STROKE_WIDTH);
+                    canvas.drawLine(stroke.getX(0), stroke.getY(0), stroke.getX(1), stroke.getY(1), paint);
+                }
+                if (stroke.getSize() > 2) {
+                    for (int f = 2; f < stroke.getSize(); f++) {
+                        double distance = pythag(stroke.getX(f - 1), stroke.getY(f - 1), stroke.getX(f), stroke.getY(f));
+                        paint.setStrokeWidth(getStrokeWidth(distance, stroke.getTime(f) - stroke.getTime(f - 1)));
+                        canvas.drawLine(stroke.getX(f - 1), stroke.getY(f - 1), stroke.getX(f), stroke.getY(f), paint);
+                    }
                 }
             }
         }

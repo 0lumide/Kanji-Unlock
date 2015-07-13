@@ -30,6 +30,8 @@ import java.util.List;
  */
 public class MyVerticalFragment extends Fragment{
     private int[] keys;
+    private ViewPager pager;
+    private MyPagerAdapter pageAdapter;
 
     public static MyVerticalFragment newInstance(int screen){
         Log.v("Vertical fragment", "new Instance");
@@ -38,6 +40,18 @@ public class MyVerticalFragment extends Fragment{
         bundle.putInt(AppConstants.FRAGMENT_BUNDLE_INIT_INT, screen);
         myVerticalFragment.setArguments(bundle);
         return myVerticalFragment;
+    }
+
+    public void onBackPressed(){
+        if((pager != null)&&(pageAdapter!=null)) {
+            ((MyHorizontalFragment)pageAdapter.getItem(pager.getCurrentItem())).onBackPressed();
+        }
+    }
+
+    public void onBackLongPressed(){
+        if((pager != null)&&(pageAdapter!=null)) {
+            ((MyHorizontalFragment)pageAdapter.getItem(pager.getCurrentItem())).onBackLongPressed();
+        }
     }
 
     private List<Fragment> getFragments(){
@@ -61,8 +75,8 @@ public class MyVerticalFragment extends Fragment{
                 R.id.but9, R.id.but10, R.id.but11, R.id.but12, R.id.but_back};
         if (screen == 1) {
             View view = inflater.inflate(R.layout.fragment_write_to_unlock, viewGroup, false);
-            ViewPager pager = (ViewPager) view.findViewById(R.id.horizontal_pager);
-            MyPagerAdapter pageAdapter = new MyPagerAdapter(getActivity().getSupportFragmentManager(), getFragments());
+            pager = (ViewPager) view.findViewById(R.id.horizontal_pager);
+            pageAdapter = new MyPagerAdapter(getActivity().getSupportFragmentManager(), getFragments());
             LinePageIndicator indicator = (LinePageIndicator)view.findViewById(R.id.indicator);
             pager.setAdapter(pageAdapter);
             indicator.setViewPager(pager);
