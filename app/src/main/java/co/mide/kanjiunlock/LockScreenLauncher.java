@@ -5,31 +5,53 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.WindowManager;
 
 public class LockScreenLauncher extends BroadcastReceiver {
     //Stuff for lock after time
-    private long lockTime;
+    private Handler handler;
+    private boolean notCancelled = true;
+    private final int THREE_SECONDS = 3000;
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         boolean isEnabled = context.getSharedPreferences(AppConstants.PREF_NAME, context.MODE_PRIVATE).getBoolean(AppConstants.IS_ENABLED, false);
-        if(intent.getAction().equalsIgnoreCase("android.intent.action.SCREEN_OFF")) {
+        if(intent.getAction().equalsIgnoreCase(Intent.ACTION_SCREEN_OFF)) {
             Log.v("Broadcast", "Screen off broadcast received");
-            if(isEnabled)
-                launchLockScreen(context);
+            if (isEnabled) {
+                notCancelled = true;
+                //launch lockscreen after 3 seconds
+                handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                /* Create an Intent that will start the Menu-Activity. */
+                        if (notCancelled) {
+                            launchLockScreen(context);
+                        }
+                    }
+                }, THREE_SECONDS);
+            }
+        } else if (intent.getAction().equalsIgnoreCase(Intent.ACTION_SCREEN_ON)) {
+            Log.v("Broadcast", "Screen on broadcast received");
+            if(isEnabled && (Unlock.getUnlock() == null)) {
+                handler.removeCallbacks(null);
+                notCancelled = false;
+            }
         }
-        else if(intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED")){
+        else if(intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)){
             //Start the service if need be
             if(isEnabled) {
                 Intent i= new Intent(context, WishIDidntNeedThisService.class);
                 context.startService(i);
             }
         }
-        else if(intent.getAction().equalsIgnoreCase("android.intent.action.TIME_TICK")
+        else if(intent.getAction().equalsIgnoreCase(Intent.ACTION_TIME_TICK)
+                //not sure about time set
                 || intent.getAction().equalsIgnoreCase("android.intent.action.TIME_SET")
-                ||intent.getAction().equalsIgnoreCase("android.intent.action.TIMEZONE_CHANGED")){
+                ||intent.getAction().equalsIgnoreCase(Intent.ACTION_TIMEZONE_CHANGED)){
             Log.v("Broadcast", intent.getAction()+ " received");
             Unlock unlock = Unlock.getUnlock();
             if(unlock != null) {

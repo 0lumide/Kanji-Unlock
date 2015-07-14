@@ -27,6 +27,7 @@ public class WishIDidntNeedThisService extends Service {
         //https://thinkandroid.wordpress.com/2010/01/24/handling-screen-off-and-screen-on-intents/
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_TIME_TICK);
         filter.addAction(Intent.ACTION_TIME_CHANGED);
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
