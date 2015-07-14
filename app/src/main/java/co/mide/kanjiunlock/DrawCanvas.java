@@ -149,7 +149,6 @@ public class DrawCanvas extends View {
             if(event.getAction() == MotionEvent.ACTION_MOVE){
                 final int historySize = event.getHistorySize();
                 final int pointerCount = event.getPointerCount();
-                Log.d("stroke", String.format("Hist: %d, Point: %d",historySize, pointerCount));
                 for (int h = 0; h < historySize; h++) {
                     stroke.addPoint((int) event.getHistoricalX(h),
                             (int) event.getHistoricalY(h),
@@ -161,8 +160,6 @@ public class DrawCanvas extends View {
                         event.getPressure(),
                         event.getEventTime());
             }else{
-                final int pointerCount = event.getPointerCount();
-                Log.d("stroke", String.format("Point: %d", pointerCount));
                 stroke.addPoint((int) event.getX(),
                         (int) event.getY(),
                         event.getPressure(),
@@ -202,7 +199,6 @@ public class DrawCanvas extends View {
             return time.get(index);
         }
         public void addPoint(int x, int y, float pressure, long time){
-            Log.v("add", "added: "+x+","+y+","+pressure+","+time);
             xCoor.add(x);
             yCoor.add(y);
             this.time.add(time);

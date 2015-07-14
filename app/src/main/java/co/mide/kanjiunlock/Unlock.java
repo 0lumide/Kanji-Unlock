@@ -5,7 +5,8 @@ import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
+import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -48,11 +49,15 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     private Zinnia zin;
     private MyPagerAdapter pageAdapter;
     private static Unlock unlock;
+    private final int FIVE_SECONDS = 5000;
     private SharedPreferences preferences;
+    private View view;
+    private int origTimeout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        origTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, -1);
         zin = new Zinnia(this);
         dateFormat = new SimpleDateFormat("EEE, MMM d");
         timeFormat = new SimpleDateFormat("h:mm");
@@ -158,6 +163,8 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
 
     @Override
     public void onDestroy(){
+        if(origTimeout != -1)
+            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, origTimeout);
         if((winManager1 != null)&&(wrapperView1 != null)){
             winManager1.removeView(wrapperView1);
             wrapperView1.removeAllViews();
@@ -229,7 +236,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     }
 
     private void setupActivity(){
-        View view = null;
+        view = null;
         if(getIntent().getBooleanExtra(AppConstants.IS_ACTUALLY_LOCKED, false)){
             //just to still be able to pick up onback pressed
             setContentView(R.layout.activity_blank);
@@ -239,6 +246,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
             wrapperView1 = new RelativeLayout(getBaseContext());
             getWindow().setAttributes(localLayoutParams1);
             winManager1.addView(wrapperView1, localLayoutParams1);
+            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, FIVE_SECONDS);
             view = View.inflate(this, R.layout.activity_unlock, wrapperView1);
             locked = true;
 

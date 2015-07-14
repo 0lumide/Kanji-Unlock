@@ -5,6 +5,4 @@ package co.mide.kanjiunlock;
  */
 public interface StrokeCallback {
     public void onStrokeCountChange(int strokeCount);
-//    public void onStrokeDeleted(int strokeCount);
-//    public void onStrokeAdded(int strokeCount);
 }
