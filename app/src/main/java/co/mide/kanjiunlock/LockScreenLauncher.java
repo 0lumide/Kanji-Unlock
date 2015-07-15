@@ -32,6 +32,7 @@ public class LockScreenLauncher extends BroadcastReceiver {
                 /* Create an Intent that will start the Menu-Activity. */
                         if (notCancelled) {
                             launchLockScreen(context);
+                            scheduled = false;
                         }
                     }
                 }, THREE_SECONDS);
