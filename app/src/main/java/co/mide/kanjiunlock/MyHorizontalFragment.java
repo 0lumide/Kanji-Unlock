@@ -1,5 +1,6 @@
 package co.mide.kanjiunlock;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
     private char character;
     private int strokeNum;
     private DrawCanvas canvas;
-    private long zinniaCharacter;
+    private long zinniaCharacter = -1;
     private TextView progressReport;
 
     public static MyHorizontalFragment newInstance(int screen){
@@ -46,6 +47,9 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
 
     public void onStrokeCountChange(int strokeCount){
         formatProgressReport(strokeCount);
+        if(zinniaCharacter == -1)
+            //create and initialize character
+            zinniaCharacter = ((Unlock)getActivity()).createCharacter(canvas.getWidth(), canvas.getHeight());
         if(strokeCount > 0) {
             DrawCanvas.Stroke stroke = canvas.getStroke(strokeCount - 1);
             for (int i = 0; i < stroke.getSize(); i++) {
@@ -61,7 +65,8 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
     }
 
     private void resetCanvas(){
-        Zinnia.zinnia_character_destroy(zinniaCharacter);
+        if(zinniaCharacter != -1)
+            Zinnia.zinnia_character_destroy(zinniaCharacter);
         zinniaCharacter = ((Unlock)getActivity()).createCharacter(canvas.getWidth(), canvas.getHeight());
         canvas.resetCanvas();
         formatProgressReport(0);
@@ -156,8 +161,6 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
         }
         canvas.registerStrokeCallback(this);
         formatProgressReport(0);
-        //create and initialize character
-        zinniaCharacter = ((Unlock)getActivity()).createCharacter(canvas.getWidth(), canvas.getHeight());
         ((SVGImageView) view.findViewById(R.id.grid_background)).setImageAsset("grid.svg");
         return view;
     }

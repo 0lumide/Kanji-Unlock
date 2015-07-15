@@ -1,7 +1,6 @@
 package co.mide.kanjiunlock;
 
-import android.content.Context;
-import android.widget.ImageView;
+import java.text.Normalizer;
 
 /**
  * Created by Olumide on 5/17/2015.
@@ -16,9 +15,6 @@ public class JapCharacter {
         return hex;
     }
     public static boolean isValid(char n){
-        if((('a' <= n) && ('z' >= n)) || (('A' <= n) && ('Z' >= n))){
-            return true;
-        }
         if(isKana(n)||(n >= 19968)&&(n<=40879)||((n>13312)&&(n < 19903)))
             return true;
         return false;
@@ -53,5 +49,16 @@ public class JapCharacter {
             return true;
         }
         return false;
+    }
+
+    public static boolean isVoiced(Character character){//i.e has ten ten
+        //first check if kana
+        if(!isKana(character))
+            return false;
+        return (character != getVoiceless(character));
+    }
+
+    public static char getVoiceless(char c){
+        return Normalizer.normalize(Character.toString(c), Normalizer.Form.NFD).charAt(0);
     }
 }

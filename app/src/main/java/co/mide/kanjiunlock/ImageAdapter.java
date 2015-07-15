@@ -88,7 +88,7 @@ public class ImageAdapter extends BaseAdapter {
         if(sharedPreferences.getBoolean(AppConstants.CHAR_CHOSEN, true) && (count > 0)) {
             for (int i = 1; i <= count; i++) {
                 marked[i] = false;
-                characters[i] = sharedPreferences.getInt(AppConstants.CHAR_PREFIX + i, 'A');
+                characters[i] = sharedPreferences.getInt(AppConstants.CHAR_PREFIX + i, '小');
             }
         }
         mContext = c;

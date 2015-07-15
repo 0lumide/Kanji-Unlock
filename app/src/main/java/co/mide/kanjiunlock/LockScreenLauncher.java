@@ -15,13 +15,15 @@ public class LockScreenLauncher extends BroadcastReceiver {
     private Handler handler;
     private boolean notCancelled = true;
     private final int THREE_SECONDS = 3000;
+    private boolean scheduled = false;
     @Override
     public void onReceive(final Context context, Intent intent) {
         boolean isEnabled = context.getSharedPreferences(AppConstants.PREF_NAME, context.MODE_PRIVATE).getBoolean(AppConstants.IS_ENABLED, false);
         if(intent.getAction().equalsIgnoreCase(Intent.ACTION_SCREEN_OFF)) {
             Log.v("Broadcast", "Screen off broadcast received");
-            if (isEnabled) {
+            if (isEnabled && !scheduled) {
                 notCancelled = true;
+                scheduled = true;
                 //launch lockscreen after 3 seconds
                 handler = new Handler();
                 handler.postDelayed(new Runnable() {
@@ -37,8 +39,10 @@ public class LockScreenLauncher extends BroadcastReceiver {
         } else if (intent.getAction().equalsIgnoreCase(Intent.ACTION_SCREEN_ON)) {
             Log.v("Broadcast", "Screen on broadcast received");
             if(isEnabled && (Unlock.getUnlock() == null)) {
-                handler.removeCallbacks(null);
+                if(handler != null)
+                    handler.removeCallbacks(null);
                 notCancelled = false;
+                scheduled = false;
             }
         }
         else if(intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)){

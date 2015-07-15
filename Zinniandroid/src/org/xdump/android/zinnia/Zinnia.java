@@ -1,6 +1,16 @@
 package org.xdump.android.zinnia;
 
 import android.content.Context;
+import android.content.res.AssetManager;
+import android.graphics.Path;
+import android.os.Environment;
+import android.util.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class Zinnia {
     private Context context;
@@ -37,11 +47,84 @@ public class Zinnia {
 	public native long      zinnia_result_size(long result);
 	public native void        zinnia_result_destroy(long result);
 
-	public long zinnia_recognizer_new(String modelName){
-		long recognizer = zinnia_recognizer_new();
-        zinnia_recognizer_open(recognizer, modelName);
+	public long zinnia_recognizer_new(String modelName) throws ModelDoesNotExistException{
+        String state = Environment.getExternalStorageState();
+        String modelPath;
+        //If the model file can be read from storage
+        Log.d("Mount state", state);
+        if(state.equals(Environment.MEDIA_MOUNTED) || state.equals(Environment.MEDIA_MOUNTED_READ_ONLY)){
+            File zinniaDir = new File(Environment.getExternalStorageDirectory(), "zinnia" + File.separatorChar);
+            if(!zinniaDir.exists())
+                zinniaDir.mkdir();
+            File modelFile = new File(zinniaDir, modelName);
+            //If model doesn't exist
+            if(!modelFile.exists()){
+                //Move the read model to zinniaDir
+                modelPath = readFromAsset(modelName, zinniaDir);
+            }else{
+                modelPath = modelFile.getAbsolutePath();
+            }
+        }
+        else{
+            //Move the read model to a temp location
+            modelPath = readFromAsset(modelName, context.getCacheDir());
+        }
+        if(modelPath == null)
+            throw new ModelDoesNotExistException(modelName);
+        long recognizer = zinnia_recognizer_new();
+        zinnia_recognizer_open(recognizer, modelPath);
         return recognizer;
 	}
+
+    /**
+     modified from: http://stackoverflow.com/a/4530294/2057884
+     */
+    private String readFromAsset(String assetName, File destinationDir){
+        AssetManager assetManager = context.getAssets();
+        InputStream in = null;
+        OutputStream out = null;
+        File outFile = null;
+        try {
+            in = assetManager.open(assetName);
+            outFile = new File(destinationDir, assetName);
+            out = new FileOutputStream(outFile);
+            copyFile(in, out);
+        } catch(IOException e) {
+            outFile = null;
+            Log.e("tag", "Failed to copy asset file: " + assetName, e);
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // NOOP
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    // NOOP
+                }
+            }
+        }
+        if(outFile!=null)
+            return outFile.getAbsolutePath();
+        else
+            return null;
+    }
+    /**
+        author: Rohith Nandakumar
+        source: http://stackoverflow.com/a/4530294/2057884
+     */
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1){
+            out.write(buffer, 0, read);
+        }
+    }
 
 	private native long zinnia_recognizer_new();
 	public native void                zinnia_recognizer_destroy(long recognizer);

@@ -3,7 +3,7 @@
     package="com.caverock.androidsvg.test" >
 
     <uses-sdk
-        android:minSdkVersion="14"
+        android:minSdkVersion="8"
         android:targetSdkVersion="22" />
 
     <instrumentation

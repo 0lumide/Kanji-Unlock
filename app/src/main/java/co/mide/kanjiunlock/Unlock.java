@@ -15,13 +15,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import org.xdump.android.zinnia.ModelDoesNotExistException;
 import org.xdump.android.zinnia.Zinnia;
 
 import fr.castorflex.android.verticalviewpager.VerticalViewPager;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,7 +43,6 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     private DateFormat amPmFormat;
     private VerticalViewPager pager;
     private long recognizer;
-    private long zinniaCharacter;
     private Zinnia zin;
     private MyPagerAdapter pageAdapter;
     private static Unlock unlock;
@@ -57,7 +55,13 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         origTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, -1);
+        Log.d("Timeout", origTimeout+"");
         zin = new Zinnia(this);
+        try {
+            recognizer = zin.zinnia_recognizer_new("handwriting-ja.model");
+        }catch (ModelDoesNotExistException e){
+            Log.e("Zinnia model", "Model does not exist");
+        }
         dateFormat = new SimpleDateFormat("EEE, MMM d");
         timeFormat = new SimpleDateFormat("h:mm");
         amPmFormat = new SimpleDateFormat("a");
@@ -106,58 +110,34 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     }
 
     public boolean verifyCharacter(char character, long zinniaCharacter){
-//        long result = zin.zinnia_recognizer_classify(recognizer, zinniaCharacter, 10);
-        return false;
+        boolean returnValue = false;
+        long result = zin.zinnia_recognizer_classify(recognizer, zinniaCharacter, 10);
+        if (result == 0) {
+            Log.e("Zinnia", String.format("%s", zin.zinnia_recognizer_strerror(recognizer)));
+        }else {
+            for (int i = 0; i < zin.zinnia_result_size(result); i++) {
+                Log.v("Zinnia", String.format("%s\t%f\n", zin.zinnia_result_value(result, i), zin.zinnia_result_score(result, i)));
+                if(zin.zinnia_result_value(result, i).equals(Character.toString(character))){
+                    returnValue = true;
+                    unlock();
+                }else if(JapCharacter.isKana(character)){//This is because zinnia doesn't play well with ten ten
+                    if(JapCharacter.isVoiced(character)){
+                        char voicelessCharacter = JapCharacter.getVoiceless(character);
+                        if(zin.zinnia_result_value(result, i).equals(Character.toString(voicelessCharacter))){
+                            returnValue = true;
+                            unlock();
+                        }
+                    }
+                }
+            }
+        }
+        return returnValue;
     }
 
     public long createCharacter(int width, int height){
         long character = zin.zinnia_character_new();
         setCharacterSize(character, width, height);
         return character;
-    }
-    private void zinniaStuff(){
-        zinniaCharacter = zin.zinnia_character_new();
-//        getAssets().open("handwriting-ja.model").
-        File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "kanjiUnlock" + File.separatorChar + "handwriting-ja.model");
-        if(!file.exists()) {
-            Toast.makeText(this, "File doesn't Exist", Toast.LENGTH_SHORT).show();
-        } else{
-            Toast.makeText(this, "File Exists", Toast.LENGTH_SHORT).show();
-            recognizer = zin.zinnia_recognizer_new(file.getAbsolutePath());
-            zin.zinnia_character_set_height(zinniaCharacter, 300);
-            zin.zinnia_character_set_width(zinniaCharacter, 300);
-            zin.zinnia_character_add(zinniaCharacter, 0, 51, 29);
-            zin.zinnia_character_add(zinniaCharacter, 0, 117, 41);
-            zin.zinnia_character_add(zinniaCharacter, 1, 99, 65);
-            zin.zinnia_character_add(zinniaCharacter, 1, 219, 77);
-            zin.zinnia_character_add(zinniaCharacter, 2, 27, 131);
-            zin.zinnia_character_add(zinniaCharacter, 2, 261, 131);
-            zin.zinnia_character_add(zinniaCharacter, 3, 129, 17);
-            zin.zinnia_character_add(zinniaCharacter, 3, 57, 203);
-            zin.zinnia_character_add(zinniaCharacter, 4, 111, 71);
-            zin.zinnia_character_add(zinniaCharacter, 4, 219, 173);
-            zin.zinnia_character_add(zinniaCharacter, 5, 81, 161);
-            zin.zinnia_character_add(zinniaCharacter, 5, 93, 281);
-            zin.zinnia_character_add(zinniaCharacter, 6, 99, 167);
-            zin.zinnia_character_add(zinniaCharacter, 6, 207, 167);
-            zin.zinnia_character_add(zinniaCharacter, 6, 189, 245);
-            zin.zinnia_character_add(zinniaCharacter, 7, 99, 227);
-            zin.zinnia_character_add(zinniaCharacter, 7, 189, 227);
-            zin.zinnia_character_add(zinniaCharacter, 8, 111, 257);
-            zin.zinnia_character_add(zinniaCharacter, 8, 189, 245);
-        }
-
-        long result = zin.zinnia_recognizer_classify(recognizer, zinniaCharacter, 10);
-        if (result == 0) {
-            Toast.makeText(this, String.format("%s\n", zin.zinnia_recognizer_strerror(recognizer)), Toast.LENGTH_SHORT).show();
-            Log.v("Zinnia", String.format("%s\n", zin.zinnia_recognizer_strerror(recognizer)));
-        }else {
-            for (int i = 0; i < zin.zinnia_result_size(result); ++i) {
-                Log.v("Zinnia", String.format("%s\t%f\n", zin.zinnia_result_value(result, i), zin.zinnia_result_score(result, i)));
-                Toast.makeText(this, String.format("%s\t%f\n", zin.zinnia_result_value(result, i), zin.zinnia_result_score(result, i)), Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     @Override
@@ -174,8 +154,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
         }
         locked = false;
         try {
-//            zin.zinnia_character_destroy(zinniaCharacter);
-//            zin.zinnia_recognizer_destroy(recognizer);
+            zin.zinnia_recognizer_destroy(recognizer);
         }catch (Exception e){
 
         }
@@ -193,23 +172,14 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
 
     public void onBackKeyPressed(){
         Log.d("Back", "back pressed");
-        if(isPreview)
-            super.onBackPressed();
-        else{
-            Log.d("Back", "item: "+pager.getCurrentItem());
-            if(pager.getCurrentItem() == 0)
-                ((MyVerticalFragment)pageAdapter.getItem(0)).onBackPressed();
-        }
+        if(!isPreview && (pager.getCurrentItem() == 0))
+            ((MyVerticalFragment)pageAdapter.getItem(0)).onBackPressed();
     }
 
     public void onBackKeyLongPressed(){
         Log.d("Back", "back long pressed");
-        if(isPreview)
-            super.onBackPressed();
-        else{
-            if(pager.getCurrentItem() == 0)
-                ((MyVerticalFragment)pageAdapter.getItem(0)).onBackLongPressed();
-        }
+        if(!isPreview && (pager.getCurrentItem() == 0))
+            ((MyVerticalFragment)pageAdapter.getItem(0)).onBackLongPressed();
     }
 
     @Override
@@ -314,11 +284,11 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
         pager.setPageTransformer(true, new MyPageTransformer());
     }
 
-    public void unlockPhone(View v){
-        //Unlock Phone here
-        if(v.getId() == R.id.unlock_button)
-            unlock();
-    }
+//    public void unlockPhone(View v){
+//        //Unlock Phone here
+//        if(v.getId() == R.id.unlock_button)
+//            unlock();
+//    }
 
     private void unlock() {
         Log.d("Unlock", "Unlock function");

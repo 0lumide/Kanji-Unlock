@@ -28,15 +28,6 @@ public class CustomViewGroup extends ViewGroup {
     }
     @Override
     public boolean dispatchKeyEvent(KeyEvent key) {
-        if(key.getKeyCode() == KeyEvent.KEYCODE_POWER){
-            Log.d("Power", "Power Button");
-            if(key.getAction() == KeyEvent.ACTION_DOWN){
-                Log.d("Power", "Power Button Down");
-            }else if(key.getAction() == KeyEvent.ACTION_UP){
-                Log.d("Power", "Power Button Up");
-            }
-            return super.dispatchKeyEvent(key);
-        }
         if((key.getAction() == KeyEvent.ACTION_DOWN) && (key.getKeyCode() == KeyEvent.KEYCODE_BACK)&&(key.isLongPress())) {
             if (callback != null)
                 callback.onBackKeyLongPressed();
