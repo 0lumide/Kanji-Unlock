@@ -52,7 +52,7 @@ public class Zinnia {
         String modelPath;
         //If the model file can be read from storage
         Log.d("Mount state", state);
-        if(state.equals(Environment.MEDIA_MOUNTED) || state.equals(Environment.MEDIA_MOUNTED_READ_ONLY)){
+        if(state.equals(Environment.MEDIA_MOUNTED)){
             File zinniaDir = new File(Environment.getExternalStorageDirectory(), "zinnia" + File.separatorChar);
             if(!zinniaDir.exists())
                 zinniaDir.mkdir();

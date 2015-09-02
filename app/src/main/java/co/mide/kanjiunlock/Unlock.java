@@ -1,10 +1,8 @@
 package co.mide.kanjiunlock;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -32,7 +30,6 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     private boolean isPreview = false;
     public static boolean locked = false;
     private WindowManager winManager = null;
-    private WindowManager winManager1 = null;
     private CustomViewGroup wrapperView = null;
     private RelativeLayout wrapperView1 = null;
     private TextView dateText = null;
@@ -46,7 +43,6 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     private Zinnia zin;
     private MyPagerAdapter pageAdapter;
     private static Unlock unlock;
-    private final int FIVE_SECONDS = 5000;
     private SharedPreferences preferences;
     private View view;
     private int origTimeout;
@@ -54,14 +50,8 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        origTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, -1);
+        origTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, 30);
         Log.d("Timeout", origTimeout+"");
-        zin = new Zinnia(this);
-        try {
-            recognizer = zin.zinnia_recognizer_new("handwriting-ja.model");
-        }catch (ModelDoesNotExistException e){
-            Log.e("Zinnia model", "Model does not exist");
-        }
         dateFormat = new SimpleDateFormat("EEE, MMM d");
         timeFormat = new SimpleDateFormat("h:mm");
         amPmFormat = new SimpleDateFormat("a");
@@ -70,6 +60,12 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
         amPmFormat.setTimeZone(TimeZone.getDefault());
         preferences = getSharedPreferences(AppConstants.PREF_NAME, MODE_PRIVATE);
         setupActivity();
+        zin = new Zinnia(this);
+        try {
+            recognizer = zin.zinnia_recognizer_new("handwriting-ja.model");
+        }catch (ModelDoesNotExistException e){
+            Log.e("Zinnia model", "Model does not exist");
+        }
         unlock = this;
     }
 
@@ -142,17 +138,25 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
 
     @Override
     public void onDestroy(){
-        if(origTimeout != -1)
-            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, origTimeout);
-        if((winManager1 != null)&&(wrapperView1 != null)){
-            winManager1.removeView(wrapperView1);
-            wrapperView1.removeAllViews();
+        WindowManager winManager = ((WindowManager)getApplicationContext().getSystemService(WINDOW_SERVICE));
+        if(winManager != null) {
+            if (wrapperView1 != null) {
+                winManager.removeView(wrapperView1);
+                wrapperView1.removeAllViews();
+            } else {
+                Log.d("Destroy", "wrapperView1 is null");
+            }
+            if (wrapperView != null) {
+                winManager.removeView(wrapperView);
+                wrapperView.removeAllViews();
+            } else {
+                Log.d("Destroy", "wrapperView is null");
+            }
+            if (origTimeout != -1) {
+                Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, origTimeout);
+                Log.v("timeout", "orig timeout: " + origTimeout);
+            }
         }
-        if((winManager != null)&&(wrapperView != null)){
-            winManager.removeView(wrapperView);
-            wrapperView.removeAllViews();
-        }
-        locked = false;
         try {
             zin.zinnia_recognizer_destroy(recognizer);
         }catch (Exception e){
@@ -160,6 +164,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
         }
         Log.v("Unlock", "Unlocked");
         unlock = null;
+        locked = false;
         super.onDestroy();
     }
 
@@ -206,18 +211,18 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
 
     private void setupActivity(){
         view = null;
-        if(getIntent().getBooleanExtra(AppConstants.IS_ACTUALLY_LOCKED, false)){
+        if(getIntent().getBooleanExtra(AppConstants.IS_ACTUALLY_LOCKED, false) && !locked){
             //just to still be able to pick up onback pressed
             setContentView(R.layout.activity_blank);
             isPreview = false;
+            locked = true;
             WindowManager.LayoutParams localLayoutParams1 = new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-            winManager1 = ((WindowManager)getApplicationContext().getSystemService(WINDOW_SERVICE));
+            winManager = ((WindowManager)getApplicationContext().getSystemService(WINDOW_SERVICE));
             wrapperView1 = new RelativeLayout(getBaseContext());
             getWindow().setAttributes(localLayoutParams1);
-            winManager1.addView(wrapperView1, localLayoutParams1);
-            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, FIVE_SECONDS);
+            winManager.addView(wrapperView1, localLayoutParams1);
+            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, AppConstants.FIVE_SECONDS);
             view = View.inflate(this, R.layout.activity_unlock, wrapperView1);
-            locked = true;
 
             RelativeLayout unlockLayout = (RelativeLayout)view.findViewById(R.id.unlock_layout);
             dateText = (TextView)view.findViewById(R.id.date);
@@ -230,8 +235,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
             pager = (VerticalViewPager)view.findViewById(R.id.vertical_pager);
             pager.setAdapter(pageAdapter);
 
-            winManager = ((WindowManager) getApplicationContext()
-                    .getSystemService(Context.WINDOW_SERVICE));
+
             WindowManager.LayoutParams localLayoutParams = new WindowManager.LayoutParams();
             localLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
             localLayoutParams.gravity = Gravity.TOP;
@@ -265,7 +269,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
             });
             Log.v("Unlock", "Locked");
 
-        }else{
+        }else if(!getIntent().getBooleanExtra(AppConstants.IS_ACTUALLY_LOCKED, false)){
             setContentView(R.layout.activity_unlock);
             pageAdapter = new MyPagerAdapter(getSupportFragmentManager(), getFragments());
             pager = (VerticalViewPager)findViewById(R.id.vertical_pager);
@@ -292,9 +296,9 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
 
     private void unlock() {
         Log.d("Unlock", "Unlock function");
-        locked = false;
         finish();
         if (!isPreview)
             overridePendingTransition(0, 0);
+        locked = false;
     }
 }

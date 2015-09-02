@@ -15,4 +15,6 @@ public class AppConstants {
     public static final String CHAR_COUNT = "char_count";
     public static final String CHAR_PREFIX = "chosen_char_";
     public static final String FRAGMENT_BUNDLE_INIT_INT = "bundle_init_int";
+    public static final int THREE_SECONDS = 3000;
+    public static final int FIVE_SECONDS = 5000;
 }

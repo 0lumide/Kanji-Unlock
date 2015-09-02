@@ -14,11 +14,10 @@ public class LockScreenLauncher extends BroadcastReceiver {
     //Stuff for lock after time
     private Handler handler;
     private boolean notCancelled = true;
-    private final int THREE_SECONDS = 3000;
     private boolean scheduled = false;
     @Override
     public void onReceive(final Context context, Intent intent) {
-        boolean isEnabled = context.getSharedPreferences(AppConstants.PREF_NAME, context.MODE_PRIVATE).getBoolean(AppConstants.IS_ENABLED, false);
+        boolean isEnabled = context.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE).getBoolean(AppConstants.IS_ENABLED, false);
         if(intent.getAction().equalsIgnoreCase(Intent.ACTION_SCREEN_OFF)) {
             Log.v("Broadcast", "Screen off broadcast received");
             if (isEnabled && !scheduled) {
@@ -35,7 +34,7 @@ public class LockScreenLauncher extends BroadcastReceiver {
                             scheduled = false;
                         }
                     }
-                }, THREE_SECONDS);
+                }, AppConstants.THREE_SECONDS);
             }
         } else if (intent.getAction().equalsIgnoreCase(Intent.ACTION_SCREEN_ON)) {
             Log.v("Broadcast", "Screen on broadcast received");
@@ -78,7 +77,7 @@ public class LockScreenLauncher extends BroadcastReceiver {
     }
     private void launchLockScreen(Context context){
         if(!Unlock.locked && !isModeInCall(context) && isCallIdle(context)) {
-            Unlock.locked = true;
+//            Unlock.locked = true;
             Log.v("LockScreen", "Attempting to launch LockScreen");
             Intent localIntent = new Intent(context, Unlock.class);
             localIntent.putExtra(AppConstants.IS_ACTUALLY_LOCKED, true);
