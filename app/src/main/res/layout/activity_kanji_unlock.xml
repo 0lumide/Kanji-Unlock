@@ -32,7 +32,7 @@
                 android:numColumns="auto_fit"
                 android:verticalSpacing="3dp"
                 android:horizontalSpacing="3dp"
-                android:stretchMode="columnWidth">
+                android:stretchMode="spacingWidthUniform">
             </GridView>
         </LinearLayout>
         <LinearLayout

@@ -15,6 +15,8 @@ public class JapCharacter {
         return hex;
     }
     public static boolean isValid(char n){
+        if(((n <= 'Z') && (n >= 'A'))||((n <= 'z') && (n >= 'a')))
+            return true;
         if(isKana(n)||(n >= 19968)&&(n<=40879)||((n>13312)&&(n < 19903)))
             return true;
         return false;

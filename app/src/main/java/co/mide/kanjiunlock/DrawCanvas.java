@@ -51,6 +51,13 @@ public class DrawCanvas extends View {
         init();
     }
 
+    @Override
+    public void onMeasure(int measuredWidth, int measuredHeight){
+        int dimension = measuredWidth;
+        if(measuredHeight < measuredWidth)
+            dimension = measuredHeight;
+        setMeasuredDimension(dimension, dimension);
+    }
     public Stroke getStroke(int strokeNum){
         return strokes.get(strokeNum);
     }
