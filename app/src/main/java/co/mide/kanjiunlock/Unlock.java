@@ -50,7 +50,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        origTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, 30);
+        origTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, -1);
         Log.d("Timeout", origTimeout+"");
         dateFormat = new SimpleDateFormat("EEE, MMM d");
         timeFormat = new SimpleDateFormat("h:mm");
@@ -152,10 +152,6 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
             } else {
                 Log.d("Destroy", "wrapperView is null");
             }
-            if (origTimeout != -1) {
-                Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, origTimeout);
-                Log.v("timeout", "orig timeout: " + origTimeout);
-            }
         }
         try {
             zin.zinnia_recognizer_destroy(recognizer);
@@ -166,6 +162,15 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
         unlock = null;
         locked = false;
         super.onDestroy();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        if (origTimeout != -1) {
+            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, origTimeout);
+            Log.v("timeout", "Timeout set to: orig timeout: " + origTimeout);
+        }
     }
 
     @Override
@@ -189,15 +194,19 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
 
     @Override
     public void onAttachedToWindow() {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         super.onAttachedToWindow();
+        if(locked)
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        if(!isPreview)
+        if(!isPreview) {
             overridePendingTransition(0, 0);
+            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, AppConstants.FIVE_SECONDS);
+            Log.v("timeout", "timeout set to Fiveseconds");
+        }
         if(isPreview)
             locked = false;
     }
@@ -216,12 +225,14 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
             setContentView(R.layout.activity_blank);
             isPreview = false;
             locked = true;
+            getWindow().setType(2004);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
             WindowManager.LayoutParams localLayoutParams1 = new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
             winManager = ((WindowManager)getApplicationContext().getSystemService(WINDOW_SERVICE));
             wrapperView1 = new RelativeLayout(getBaseContext());
             getWindow().setAttributes(localLayoutParams1);
             winManager.addView(wrapperView1, localLayoutParams1);
-            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, AppConstants.FIVE_SECONDS);
             view = View.inflate(this, R.layout.activity_unlock, wrapperView1);
 
             RelativeLayout unlockLayout = (RelativeLayout)view.findViewById(R.id.unlock_layout);

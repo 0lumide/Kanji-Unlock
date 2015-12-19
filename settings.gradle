@@ -1,2 +1,2 @@
-include ':app', ':Zinniandroid'
+include ':app'
 include ':androidSVG'

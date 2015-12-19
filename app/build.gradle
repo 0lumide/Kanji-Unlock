@@ -8,8 +8,8 @@ android {
         applicationId "co.mide.kanjiunlock"
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 5
-        versionName "1.0.4"
+        versionCode 6
+        versionName "1.0.5"
     }
 
     buildTypes {
@@ -36,6 +36,8 @@ dependencies {
     compile ('com.github.castorflex.verticalviewpager:library:19.0.1'){
         exclude group: 'com.android.support', module: 'support-v4'
     }
-    compile project(':Zinniandroid')
+    compile ('co.mide.zinniandroid:zinniandroid:0.0.3'){
+        exclude module: 'support-v4'
+    }
     compile project(':androidSVG')
 }

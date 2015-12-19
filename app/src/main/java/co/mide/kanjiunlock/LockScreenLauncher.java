@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.WindowManager;
@@ -29,7 +30,9 @@ public class LockScreenLauncher extends BroadcastReceiver {
                     @Override
                     public void run() {
                 /* Create an Intent that will start the Menu-Activity. */
-                        if (notCancelled) {
+                        PowerManager pm = (PowerManager)
+                                context.getSystemService(Context.POWER_SERVICE);
+                        if (notCancelled && !pm.isScreenOn()) {
                             launchLockScreen(context);
                             scheduled = false;
                         }
@@ -48,7 +51,7 @@ public class LockScreenLauncher extends BroadcastReceiver {
         else if(intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)){
             //Start the service if need be
             if(isEnabled) {
-                Intent i= new Intent(context, WishIDidntNeedThisService.class);
+                Intent i = new Intent(context, WishIDidntNeedThisService.class);
                 context.startService(i);
             }
         }
@@ -77,7 +80,8 @@ public class LockScreenLauncher extends BroadcastReceiver {
     }
     private void launchLockScreen(Context context){
         if(!Unlock.locked && !isModeInCall(context) && isCallIdle(context)) {
-//            Unlock.locked = true;
+            if(Unlock.getUnlock() != null)
+                Unlock.getUnlock().finish();
             Log.v("LockScreen", "Attempting to launch LockScreen");
             Intent localIntent = new Intent(context, Unlock.class);
             localIntent.putExtra(AppConstants.IS_ACTUALLY_LOCKED, true);

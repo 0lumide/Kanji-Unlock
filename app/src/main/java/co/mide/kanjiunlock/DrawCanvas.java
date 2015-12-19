@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -25,8 +26,9 @@ public class DrawCanvas extends View {
     private Bitmap viewCache;
     private final float STROKE_WIDTH = 17;
     private StrokeCallback strokeCallback;
+    private int count = 1;
 
-    private void init(){
+    private void init() {
         paint = new Paint();
         paint.setColor(Color.parseColor("#EE010101"));
         paint.setStrokeCap(Paint.Cap.ROUND);
@@ -36,28 +38,40 @@ public class DrawCanvas extends View {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(STROKE_WIDTH);
     }
-    public DrawCanvas(Context context){
+
+    public DrawCanvas(Context context) {
         super(context);
         init();
     }
 
-    public DrawCanvas(Context context, AttributeSet attrs, int defStyle){
+    public DrawCanvas(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
 
-    public DrawCanvas(Context context, AttributeSet attrs){
+    public DrawCanvas(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
     @Override
-    public void onMeasure(int measuredWidth, int measuredHeight){
-        int dimension = measuredWidth;
-        if(measuredHeight < measuredWidth)
-            dimension = measuredHeight;
-        setMeasuredDimension(dimension, dimension);
+    public void onMeasure(int measuredWidth, int measuredHeight) {
+        super.onMeasure(measuredWidth, measuredHeight);
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) getLayoutParams();
+        int dimension = 0;//Math.min(getMeasuredWidth(), getMeasuredHeight());
+        Log.e("onMeasure"+count++, String.format("Width: %s: %d: %d\tHeight: %s: %d: %d",
+                MeasureSpec.toString(MeasureSpec.getMode(measuredWidth)), getMeasuredWidth(), getWidth(),
+                MeasureSpec.toString(MeasureSpec.getMode(measuredHeight)), getMeasuredHeight(), getHeight())
+        );
+        if ((getWidth() == 0) && (getHeight() == 0)){
+            dimension = MeasureSpec.makeMeasureSpec(Math.min(getMeasuredWidth(), getMeasuredHeight()), MeasureSpec.EXACTLY);
+            setMeasuredDimension(dimension, dimension);
+        }else{
+            dimension = MeasureSpec.makeMeasureSpec(Math.min(getWidth(), getHeight()), MeasureSpec.EXACTLY);
+            setMeasuredDimension(dimension, dimension);
+        }
     }
+
     public Stroke getStroke(int strokeNum){
         return strokes.get(strokeNum);
     }
