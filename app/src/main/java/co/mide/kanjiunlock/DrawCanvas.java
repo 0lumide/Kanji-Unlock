@@ -166,7 +166,10 @@ public class DrawCanvas extends View {
             returnValue = true;
         }else{
             if((event.getAction() == MotionEvent.ACTION_UP)||(event.getAction() == MotionEvent.ACTION_CANCEL)){
-                if (strokeCallback != null)
+                if(strokes.size() > 0) {
+                    Stroke stroke = strokes.get(strokes.size() - 1);
+                    stroke.addPoint(event.getX(), event.getY(), -1);
+                }if (strokeCallback != null)
                     strokeCallback.onStrokeCountChange(strokeCount + 1);
             }
         }
@@ -248,12 +251,14 @@ public class DrawCanvas extends View {
         }
     }
 
+
+
     public class Bezier{
         public Point p0, p1, p2, p3, A;
         public final Bezier bezier;
         private final int numPoints;
         private final float startWidth, endWidth;
-        private final float VELOCITY_FILTER_WEIGHT = 0.1f;
+        private final float VELOCITY_FILTER_WEIGHT = 0.05f;
 
         public Bezier(@Nullable Bezier bezier, Point p0, Point p3){
             this.p0 = p0;
@@ -268,7 +273,10 @@ public class DrawCanvas extends View {
             }else{
                 startWidth = bezier.endWidth;
             }
-            endWidth = VELOCITY_FILTER_WEIGHT * getStrokeWidth(p3.calcSpeed(p0))
+            if(p3.time == -1)
+                endWidth = 0;
+            else
+                endWidth = VELOCITY_FILTER_WEIGHT * getStrokeWidth(p3.calcSpeed(p0))
                     + (1 - VELOCITY_FILTER_WEIGHT) * startWidth;
         }
 
