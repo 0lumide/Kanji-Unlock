@@ -29,7 +29,6 @@ import java.util.TimeZone;
 public class Unlock extends FragmentActivity implements KeyPressedCallback{
     private boolean isPreview = false;
     public static boolean locked = false;
-    private WindowManager winManager = null;
     private CustomViewGroup wrapperView = null;
     private RelativeLayout wrapperView1 = null;
     private TextView dateText = null;
@@ -44,14 +43,14 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     private MyPagerAdapter pageAdapter;
     private static Unlock unlock;
     private SharedPreferences preferences;
-    private View view;
     private int origTimeout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         origTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, -1);
-        Log.d("Timeout", origTimeout+"");
+        Log.d("Timeout", origTimeout + "");
+        setContentView(R.layout.activity_unlock);
         dateFormat = new SimpleDateFormat("EEE, MMM d");
         timeFormat = new SimpleDateFormat("h:mm");
         amPmFormat = new SimpleDateFormat("a");
@@ -99,7 +98,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     }
 
     private List<Fragment> getFragments(){
-        List<Fragment> fragmentList = new ArrayList<Fragment>();
+        List<Fragment> fragmentList = new ArrayList<>();
         fragmentList.add(MyVerticalFragment.newInstance(1));
         fragmentList.add(MyVerticalFragment.newInstance(2));
         return  fragmentList;
@@ -156,7 +155,7 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
         try {
             zin.zinnia_recognizer_destroy(recognizer);
         }catch (Exception e){
-
+            //do nothing
         }
         Log.v("Unlock", "Unlocked");
         unlock = null;
@@ -219,17 +218,16 @@ public class Unlock extends FragmentActivity implements KeyPressedCallback{
     }
 
     private void setupActivity(){
-        view = null;
+        View view;
         if(getIntent().getBooleanExtra(AppConstants.IS_ACTUALLY_LOCKED, false) && !locked){
             //just to still be able to pick up onback pressed
-            setContentView(R.layout.activity_blank);
             isPreview = false;
             locked = true;
             getWindow().setType(2004);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
             WindowManager.LayoutParams localLayoutParams1 = new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-            winManager = ((WindowManager)getApplicationContext().getSystemService(WINDOW_SERVICE));
+            WindowManager winManager = ((WindowManager)getApplicationContext().getSystemService(WINDOW_SERVICE));
             wrapperView1 = new RelativeLayout(getBaseContext());
             getWindow().setAttributes(localLayoutParams1);
             winManager.addView(wrapperView1, localLayoutParams1);

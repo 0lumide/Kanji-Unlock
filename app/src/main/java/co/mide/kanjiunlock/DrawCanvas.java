@@ -5,38 +5,34 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import java.util.ArrayList;
 
 
-/**
- * Created by Olumide on 6/6/2015.
- */
 public class DrawCanvas extends View {
     private Paint paint;
     private ArrayList<Stroke> strokes = new ArrayList<>();
     private int strokeCount = -1;
     private Bitmap viewCache;
-    private final float STROKE_WIDTH = 17;
+    private final float STROKE_WIDTH = 18;
     private StrokeCallback strokeCallback;
     private int count = 1;
+    private Canvas bitmapCanvas;
+    private int last = 0;
+    private boolean viewCacheEmpty = true;
 
     private void init() {
         paint = new Paint();
         paint.setColor(Color.parseColor("#EE010101"));
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setAntiAlias(true);
-        paint.setDither(true);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(STROKE_WIDTH);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setAntiAlias(true);
     }
 
     public DrawCanvas(Context context) {
@@ -57,11 +53,10 @@ public class DrawCanvas extends View {
     @Override
     public void onMeasure(int measuredWidth, int measuredHeight) {
         super.onMeasure(measuredWidth, measuredHeight);
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) getLayoutParams();
-        int dimension = 0;//Math.min(getMeasuredWidth(), getMeasuredHeight());
-        Log.e("onMeasure"+count++, String.format("Width: %s: %d: %d\tHeight: %s: %d: %d",
-                MeasureSpec.toString(MeasureSpec.getMode(measuredWidth)), getMeasuredWidth(), getWidth(),
-                MeasureSpec.toString(MeasureSpec.getMode(measuredHeight)), getMeasuredHeight(), getHeight())
+        int dimension;
+        Log.e("onMeasure" + count++, String.format("Width: %s: %d: %d\tHeight: %s: %d: %d",
+                        MeasureSpec.toString(MeasureSpec.getMode(measuredWidth)), getMeasuredWidth(), getWidth(),
+                        MeasureSpec.toString(MeasureSpec.getMode(measuredHeight)), getMeasuredHeight(), getHeight())
         );
         if ((getWidth() == 0) && (getHeight() == 0)){
             dimension = MeasureSpec.makeMeasureSpec(Math.min(getMeasuredWidth(), getMeasuredHeight()), MeasureSpec.EXACTLY);
@@ -72,15 +67,18 @@ public class DrawCanvas extends View {
         }
     }
 
-    public Stroke getStroke(int strokeNum){
-        return strokes.get(strokeNum);
+    public Stroke getStroke(int index){
+        return strokes.get(index);
     }
 
     public void undoStroke(){
         if(strokeCount >= 0) {
             strokeCount--;
             strokes.remove(strokes.size() - 1);
-            viewCache = null;
+            viewCacheEmpty = true;
+            viewCache = Bitmap.createBitmap(getWidth(), getHeight(),
+                    Bitmap.Config.ARGB_8888);
+            bitmapCanvas = new Canvas(viewCache);
             invalidate();
             if(strokeCallback != null)
                 strokeCallback.onStrokeCountChange(strokeCount+1);
@@ -90,7 +88,10 @@ public class DrawCanvas extends View {
     public void resetCanvas(){
         strokes = new ArrayList<>();
         strokeCount = -1;
-        viewCache = null;
+        viewCacheEmpty = true;
+        viewCache = Bitmap.createBitmap(getWidth(), getHeight(),
+                Bitmap.Config.ARGB_8888);
+        bitmapCanvas = new Canvas(viewCache);
         invalidate();
     }
 
@@ -102,136 +103,243 @@ public class DrawCanvas extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(viewCache != null)
-            canvas.drawBitmap(viewCache, 0, 0, null);
-        //draw stroke
+        //draw strokePath
         if(strokeCount >= 0) {
-            for(int i = 0; i<strokes.size(); i++) {
-                paint.setStrokeWidth(STROKE_WIDTH);
-                Stroke stroke;
-                if(viewCache != null)
-                    i = strokeCount;
-                stroke = strokes.get(i);
-                if (stroke.getSize() >= 1) {
-                    canvas.drawPoint(stroke.getX(0), stroke.getY(0), paint);
-                }
-                if (stroke.getSize() >= 2) {
+            if(!viewCacheEmpty) {
+                Stroke stroke = strokes.get(strokes.size() - 1);
+                if (stroke.getBezierCount() == 0){
                     paint.setStrokeWidth(STROKE_WIDTH);
-                    canvas.drawLine(stroke.getX(0), stroke.getY(0), stroke.getX(1), stroke.getY(1), paint);
+                    bitmapCanvas.drawPoint(stroke.getPoint(0).x, stroke.getPoint(0).y, paint);
+                }else {
+                    for(; last < stroke.getBezierCount(); last++)
+                        stroke.getBezier(last).draw(bitmapCanvas, paint);
                 }
-                if (stroke.getSize() > 2) {
-                    for (int f = 2; f < stroke.getSize(); f++) {
-                        double distance = pythag(stroke.getX(f - 1), stroke.getY(f - 1), stroke.getX(f), stroke.getY(f));
-                        paint.setStrokeWidth(getStrokeWidth(distance, stroke.getTime(f) - stroke.getTime(f - 1)));
-                        canvas.drawLine(stroke.getX(f - 1), stroke.getY(f - 1), stroke.getX(f), stroke.getY(f), paint);
+            }else {
+                viewCacheEmpty = false;
+                for (int i = 0; i <= strokeCount; i++) {
+                    Stroke stroke = strokes.get(i);
+                    paint.setStrokeWidth(STROKE_WIDTH);
+                    bitmapCanvas.drawPoint(stroke.getPoint(0).x, stroke.getPoint(0).y, paint);
+                    for (int j = 0; j < stroke.getSize(); j++) {
+                        if (j < stroke.getSize() - 1) {
+                            paint.setStrokeWidth(stroke.getBezier(j).endWidth);
+                            stroke.getBezier(j).draw(bitmapCanvas, paint);
+                        }
                     }
                 }
             }
+            canvas.drawBitmap(viewCache, 0, 0, null);
         }
-    }
-
-    private int squared(int num){
-        return num*num;
-    }
-
-    private float getStrokeWidth(double dist, long time){
-        double num = 1d;
-        double den = calcDenominator(dist/time);
-        return (float)(STROKE_WIDTH*num/den);
-    }
-
-    private double calcDenominator(double dist){
-        if(dist == Double.NaN)
-            return 1d;
-        double returnValue = 0;
-        returnValue+= 0.1*dist;
-        returnValue+= 1;
-        return returnValue;
-    }
-    private double pythag(int x1, int y1, int x2, int y2){
-        int sum = squared(x2-x1)+squared(y2 - y1);
-        return Math.sqrt(sum);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if(bitmapCanvas == null) {
+            viewCache = Bitmap.createBitmap(getWidth(), getHeight(),
+                    Bitmap.Config.ARGB_8888);
+            bitmapCanvas = new Canvas(viewCache);
+        }
         boolean returnValue = false;
         if ((event.getAction() == MotionEvent.ACTION_MOVE) || (event.getAction() == MotionEvent.ACTION_DOWN)) {
             getParent().requestDisallowInterceptTouchEvent(true);
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                setDrawingCacheEnabled(true);
-                buildDrawingCache(true);
-                viewCache = Bitmap.createBitmap(getDrawingCache());
-                setDrawingCacheEnabled(false);
                 strokeCount++;
+                last = 0;
                 strokes.add(new Stroke());
             }
             Stroke stroke = strokes.get(strokes.size() - 1);
             if(event.getAction() == MotionEvent.ACTION_MOVE){
                 final int historySize = event.getHistorySize();
-                final int pointerCount = event.getPointerCount();
                 for (int h = 0; h < historySize; h++) {
-                    stroke.addPoint((int) event.getHistoricalX(h),
-                            (int) event.getHistoricalY(h),
-                            event.getHistoricalPressure(h),
-                            event.getHistoricalEventTime(h));
+                    stroke.addPoint(event.getHistoricalX(h),
+                            event.getHistoricalY(h), event.getHistoricalEventTime(h));
                 }
-                stroke.addPoint((int) event.getX(),
-                        (int) event.getY(),
-                        event.getPressure(),
-                        event.getEventTime());
-            }else{
-                stroke.addPoint((int) event.getX(),
-                        (int) event.getY(),
-                        event.getPressure(),
-                        event.getEventTime());
+                stroke.addPoint(event.getX(), event.getY(), event.getEventTime());
+            } else {
+                if(stroke.getSize() > 0) {
+                    stroke.addPoint(event.getX(), event.getY(), event.getEventTime());
+                }else{
+                    stroke.addPoint(event.getX(), event.getY(), event.getEventTime());
+                }
             }
             invalidate();
             returnValue = true;
         }else{
-            if(((event.getAction() == MotionEvent.ACTION_UP)||(event.getAction() == MotionEvent.ACTION_CANCEL))&&(strokeCallback != null))
-                strokeCallback.onStrokeCountChange(strokeCount+1);
+            if((event.getAction() == MotionEvent.ACTION_UP)||(event.getAction() == MotionEvent.ACTION_CANCEL)){
+                if (strokeCallback != null)
+                    strokeCallback.onStrokeCountChange(strokeCount + 1);
+            }
         }
         return returnValue;
     }
 
+
     public class Stroke{
-        private ArrayList<Integer> xCoor = new ArrayList<>();
-        private ArrayList<Integer> yCoor = new ArrayList<>();
-        private ArrayList<Float> pressure = new ArrayList<>();
-        private ArrayList<Long> time = new ArrayList<>();
+        private ArrayList<Bezier> stroke = new ArrayList<>();
+        private ArrayList<Point> points = new ArrayList<>();
 
         public Stroke(){
-            xCoor.ensureCapacity(250);
-            yCoor.ensureCapacity(250);
-            time.ensureCapacity(250);
-            pressure.ensureCapacity(250);
+            stroke.ensureCapacity(250);
         }
+
+        public Bezier getBezier(int index){
+            return stroke.get(index);
+        }
+
+        public int getBezierCount(){
+            return stroke.size();
+        }
+
+        public void addPoint(float x, float y, long time){
+            Point p = new Point(x, y, time);
+            if(points.size() > 0){
+                Bezier b = stroke.size() == 0? null : stroke.get(stroke.size() - 1);
+                Point point = points.get(points.size() - 1);
+                Bezier bezier = new Bezier(b, point, p);
+                stroke.add(bezier);
+            }
+            points.add(p);
+        }
+
+        public Point getPoint(int index){
+            return points.get(index);
+        }
+
         public int getX(int index){
-            return xCoor.get(index);
+            return (int)points.get(index).x;
         }
+
         public int getY(int index){
-            return yCoor.get(index);
+            return (int)points.get(index).y;
         }
-        public float getPressure(int index){
-            return pressure.get(index);
-        }
-        public long getTime(int index){
-            return time.get(index);
-        }
-        public void addPoint(int x, int y, float pressure, long time){
-            xCoor.add(x);
-            yCoor.add(y);
-            this.time.add(time);
-            float p = pressure;
-            if(pressure < 0)
-                p = 0;
-            else if(pressure > 1)
-                p = 1;
-            this.pressure.add(p);
-        }
+
         public int getSize(){
-            return xCoor.size();
+            return points.size();
         }
+    }
+
+    public class Point{
+        public final float x, y;
+        public final long time;
+
+        public Point(float x, float y, long t){
+            this.x = x;
+            this.y = y;
+            time = t;
+        }
+
+        public double calcDistance(Point p){
+            float x = this.x - p.x;
+            float y = this.y - p.y;
+            float yy = y*y;
+            float xx = x*x;
+            return Math.sqrt(xx + yy);
+        }
+
+
+        public double calcSpeed(Point p){
+            double dist = calcDistance(p);
+            return dist/(this.time - p.time);
+        }
+
+        @Override
+        public String toString(){
+            return String.format("x: %.0f, y: %.0f", x, y);
+        }
+    }
+
+    public class Bezier{
+        public Point p0, p1, p2, p3, A;
+        public final Bezier bezier;
+        private final int numPoints;
+        private final float startWidth, endWidth;
+        private final float VELOCITY_FILTER_WEIGHT = 0.1f;
+
+        public Bezier(@Nullable Bezier bezier, Point p0, Point p3){
+            this.p0 = p0;
+            this.p3 = p3;
+            this.bezier = bezier;
+            this.p1 = calcP1();
+            this.p2 = calcP2();
+            this.A = calcA();
+            numPoints = (int) (p3.calcDistance(p0));
+            if(bezier == null){
+                startWidth = STROKE_WIDTH;
+            }else{
+                startWidth = bezier.endWidth;
+            }
+            endWidth = VELOCITY_FILTER_WEIGHT * getStrokeWidth(p3.calcSpeed(p0))
+                    + (1 - VELOCITY_FILTER_WEIGHT) * startWidth;
+        }
+
+
+        /** Draws a variable-width Bezier curve. */
+        public void draw(Canvas canvas, Paint paint) {
+            float originalWidth = paint.getStrokeWidth();
+            float widthDelta = endWidth - startWidth;
+
+            for (int i = 0; i < numPoints; i++) {
+                // Calculate the Bezier (x, y) coordinate for this step.
+                float t = ((float) i) / numPoints;
+
+                float x = p0.x + t*(p3.x - p0.x);
+                float y = p0.y + t*(p3.y - p0.y);
+
+                paint.setStrokeWidth(startWidth + t * widthDelta);
+                canvas.drawPoint(x, y, paint);
+            }
+
+            paint.setStrokeWidth(originalWidth);
+        }
+
+        private float getStrokeWidth(double velocity){
+            double num = 1d;
+            double den = calcDenominator(velocity);
+            return (float)(STROKE_WIDTH*num/den);
+        }
+
+        private double calcDenominator(double dist){
+            if(dist == Double.NaN)
+                return 1d;
+            double returnValue = 0;
+            returnValue+= dist;
+            returnValue+= 1;
+            return returnValue;
+        }
+
+        private Point calcP1(){
+            if(bezier == null){
+                Point p2 = calcP2();
+                float x = (p2.x - p0.x)/2f;
+                float y = (p2.y - p0.y)/2f;
+                return new Point(x+p0.x, y+p0.y, -1);
+            }else{
+                float x = 2 * bezier.p3.x - bezier.p2.x;
+                float y = 2 * bezier.p3.y - bezier.p2.y;
+                return new Point(x, y, -1);
+            }
+        }
+
+        private Point calcP2(){
+            if(bezier == null) {
+                float x = 1.5f * (p3.x - p0.x) / 3f;
+                float y = 1.5f * (p3.y - p0.y) / 3f;
+                return new Point(x + p0.x, y + p0.y, -1);
+            }else{
+                float x = 2.0f * (p3.x - p0.x) / 3f;
+                float y = 2.0f * (p3.y - p0.y) / 3f;
+                return new Point(x + p0.x, y + p0.y, -1);
+            }
+        }
+
+        private Point calcA(){
+            float x = 2 * p2.x - p1.x;
+            float y = 2 * p2.y - p1.y;
+            return new Point(x, y, -1);
+        }
+    }
+
+    public interface StrokeCallback {
+        void onStrokeCountChange(int strokeCount);
     }
 }

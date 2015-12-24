@@ -1,6 +1,5 @@
 package co.mide.kanjiunlock;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -24,17 +23,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
-/**
- * Created by Olumide on 6/6/2015.
- */
-public class MyHorizontalFragment extends Fragment implements StrokeCallback{
-    private SVGImageView kanjiBackground;
-    private TextView instruction;
+public class MyHorizontalFragment extends Fragment implements DrawCanvas.StrokeCallback {
     private char character;
     private int strokeNum;
     private DrawCanvas canvas;
     private long zinniaCharacter = -1;
     private TextView progressReport;
+    private int lastStroke = -1;
 
     public static MyHorizontalFragment newInstance(int screen){
         Log.v("Horizontal fragment", "new Instance");
@@ -56,12 +51,24 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
                 ((Unlock) getActivity()).addStroke(zinniaCharacter, strokeCount - 1, stroke.getX(i), stroke.getY(i));
             }
         }
-        if(strokeCount >= strokeNum){
+        if(strokeCount <= lastStroke){
+            //rebuild character
+            if(zinniaCharacter != -1)
+                Zinnia.zinnia_character_destroy(zinniaCharacter);
+            zinniaCharacter = ((Unlock)getActivity()).createCharacter(canvas.getWidth(), canvas.getHeight());
+            for(int i = 0; i < strokeCount; i++) {
+                DrawCanvas.Stroke stroke = canvas.getStroke(i);
+                for (int j = 0; j < stroke.getSize(); j++) {
+                    ((Unlock) getActivity()).addStroke(zinniaCharacter, strokeCount - 1, stroke.getX(j), stroke.getY(j));
+                }
+            }
+        }else if(strokeCount >= strokeNum){
             if(!((Unlock)getActivity()).verifyCharacter(character, zinniaCharacter)) {
                 resetCanvas();
                 progressReport.setText(R.string.write_try_again_instruction);
             }
         }
+        lastStroke = strokeCount;
     }
 
     private void resetCanvas(){
@@ -133,8 +140,8 @@ public class MyHorizontalFragment extends Fragment implements StrokeCallback{
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle){
         int screen = getArguments().getInt(AppConstants.FRAGMENT_BUNDLE_INIT_INT);
         View view = inflater.inflate(R.layout.fragment_unlock_canvas, viewGroup, false);
-        instruction = (TextView)view.findViewById(R.id.draw_instruc);
-        kanjiBackground = (SVGImageView)view.findViewById(R.id.kanji_background);
+        TextView instruction = (TextView)view.findViewById(R.id.draw_instruc);
+        SVGImageView kanjiBackground = (SVGImageView)view.findViewById(R.id.kanji_background);
         canvas = (DrawCanvas)view.findViewById(R.id.canvas);
         canvas.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
