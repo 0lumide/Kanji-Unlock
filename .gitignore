@@ -5,8 +5,8 @@
 .DS_Store
 /build
 /captures
+*.class
 Zinniandroid/obj
 Zinniandroid/build
 Zinniandroid/bin
 Zinniandroid/gen
-Zinniandroid/*.model
